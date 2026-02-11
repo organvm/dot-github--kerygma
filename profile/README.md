@@ -1,54 +1,74 @@
-# ORGAN-VII: Kerygma (Marketing)
+# ORGAN-VII: Kerygma — Proclamation & Distribution
 
-[![ORGAN-VII: Marketing](https://img.shields.io/badge/ORGAN--VII-Marketing-f9a825?style=flat-square)](https://github.com/organvm-vii-kerygma)
+[![ORGAN-VII: Kerygma](https://img.shields.io/badge/ORGAN--VII-Kerygma-b71c1c?style=flat-square)](https://github.com/organvm-vii-kerygma)
 
-> The amplification layer for the organvm system — POSSE distribution, announcements, and brand presence that carries the system's work to audiences beyond GitHub.
+> The proclamation layer for the organvm system — POSSE distribution, content syndication, announcements, and public communication that carries the system's work to audiences beyond GitHub.
 
-[Purpose](#purpose) | [Current Status](#current-status) | [Planned Infrastructure](#planned-infrastructure) | [Connection to the Eight-Organ System](#connection-to-the-eight-organ-system)
+[Philosophy](#philosophy) | [What This Organ Does](#what-this-organ-does) | [Distribution Strategy](#distribution-strategy) | [Planned Capabilities](#planned-capabilities) | [Place in the Eight-Organ System](#place-in-the-eight-organ-system) | [Current Status](#current-status)
 
 ---
 
-## Purpose
+## Philosophy
 
-ORGAN-VII manages the outward-facing communication of the [organvm eight-organ system](https://github.com/meta-organvm). While every organ produces work that speaks for itself, ORGAN-VII ensures that work reaches the people who need to see it — grant reviewers, hiring managers, potential collaborators, institutional partners, and the broader creative-technology community.
+The name *Kerygma* (Greek: κήρυγμα — proclamation, heralding) distinguishes this organ's function from ORGAN-VI (Koinonia/Community). Community creates intimate spaces for dialogue and shared inquiry. Kerygma creates channels that carry the system's work outward — to grant reviewers, hiring managers, potential collaborators, institutional partners, and the broader creative-technology community.
 
-The organ is named *Kerygma* (Greek: proclamation, announcement) to distinguish its function from ORGAN-VI (Community/Koinonia). Community creates spaces for dialogue; Marketing creates channels for broadcast. Both are necessary. Neither replaces the other.
+The guiding principle is **authentic voice over growth hacking**. ORGAN-VII does not optimize for engagement metrics or algorithmic reach. It communicates what the system has actually built, in the voice of the person who built it. Proclamation earns attention by being substantive; it does not manufacture attention through manipulation. Every piece of outbound communication should be something the author would stand behind in a fellowship interview or a gallery talk.
 
-ORGAN-VII implements a **POSSE strategy** (Publish Own Site, Syndicate Everywhere): canonical content lives in organvm repositories, then gets distributed to external platforms (social media, newsletters, portfolio sites) with links back to the source. This ensures the system owns its narrative while still reaching audiences where they are.
+## What This Organ Does
 
-## Current Status
+ORGAN-VII manages the outward-facing communication of the [organvm eight-organ system](https://github.com/meta-organvm). Its responsibilities include:
 
-ORGAN-VII is in the **planning phase**. The organizational infrastructure exists ([organvm-vii-kerygma](https://github.com/organvm-vii-kerygma) on GitHub), but substantive marketing repositories have not yet been created. Content distribution will begin once flagship READMEs and the process essay (ORGAN-V deliverables) provide material worth amplifying.
+- **Content syndication** — distributing canonical updates from organvm repositories to external platforms (social media, newsletters, portfolio sites, academic networks)
+- **Announcements** — structured release communication for milestones across all eight organs
+- **Brand coherence** — visual identity, per-organ color palette, badge systems, and presentation materials ensuring consistent representation
+- **Narrative coordination** — aggregating cross-organ progress into coherent stories for external audiences
 
-**Planned repositories:**
-- `posse-distribution` — POSSE syndication infrastructure and content pipeline
-- `announcements` — Release notes, milestones, and public updates
-- `brand-kit` — Visual identity, logos, badges, and brand guidelines
+While every organ produces work that speaks for itself, ORGAN-VII ensures that work reaches the people who need to see it.
 
-## Planned Infrastructure
+## Distribution Strategy
 
-### POSSE Distribution
-Automated syndication pipeline that publishes canonical updates from organvm repositories to external platforms. Each piece of content has a single source of truth (the organvm repo) and multiple syndicated copies with backlinks.
+ORGAN-VII implements a **POSSE strategy** — Publish on Own Site, Syndicate Elsewhere. The content lifecycle follows a clear path:
 
-### Announcements
-Structured release communication for milestones across all eight organs. Announcements aggregate cross-organ progress into coherent narratives for external audiences.
+1. **Creation** — Work originates in ORGAN-I (theory), ORGAN-II (art), or ORGAN-III (commerce)
+2. **Documentation** — READMEs and technical documentation live in their source repositories
+3. **Public Process** — ORGAN-V produces essays and methodology reflections that contextualize the work
+4. **Proclamation** — ORGAN-VII syndicates finished material to external platforms, always linking back to the canonical source
 
-### Brand Kit
-Visual identity system ensuring consistent presentation across all eight orgs — logos, color schemes (per-organ palette), badge templates, and presentation materials.
+Each piece of content has a **single source of truth** (the organvm repository) and multiple syndicated copies with backlinks. This ensures the system owns its narrative while still reaching audiences where they already are. The system never depends on any external platform for its canonical record.
 
-## Connection to the Eight-Organ System
+## Planned Capabilities
+
+**POSSE Syndication Pipeline** — Automated distribution infrastructure that publishes updates from organvm repositories to external platforms. Initial targets include social media threads, newsletter digests, and portfolio site updates.
+
+**Announcement Workflows** — Structured templates for release notes, milestone communications, and cross-organ progress reports. Announcements translate internal development milestones into narratives that external audiences can follow.
+
+**Newsletter System** — Periodic digests aggregating significant developments across the eight-organ system, written in the public-process voice established by ORGAN-V.
+
+**Brand Kit** — Visual identity system ensuring consistent presentation across all eight orgs — logos, color schemes (per-organ palette), badge templates, typography guidelines, and presentation materials.
+
+## Place in the Eight-Organ System
 
 | Organ | Relationship to ORGAN-VII |
 |-------|---------------------------|
-| I (Theory) | Provides intellectual framing for public communications |
-| II (Art) | Supplies visual and experiential assets for marketing materials |
-| III (Commerce) | Products provide concrete "what we built" narratives |
-| IV (Orchestration) | Defines release coordination and communication governance |
-| V (Public Process) | Produces essays and methodology documentation — primary marketing content |
-| VI (Community) | Community events generate announcements and engagement metrics |
-| VIII (Meta) | ORGAN-VII reports to the meta-org umbrella |
+| I · Theoria | Provides intellectual framing for public communications |
+| II · Poiesis | Supplies visual and experiential assets for marketing materials |
+| III · Ergon | Products provide concrete "what we built" narratives |
+| IV · Taxis | Defines release coordination and communication governance |
+| V · Logos | Produces essays and methodology documentation — primary content source |
+| VI · Koinonia | Community events generate announcements and engagement narratives |
+| VII · **Kerygma** | **This organ** — proclamation and distribution |
+| VIII · Meta | ORGAN-VII reports to the [meta-organvm](https://github.com/meta-organvm) umbrella |
 
-**Dependency direction:** ORGAN-VII consumes from all other organs (no back-edges). Marketing amplifies what exists; it does not create upstream obligations.
+**Dependency direction:** ORGAN-VII is a pure consumer. It amplifies what exists across all other organs but creates no upstream obligations. No back-edges — marketing follows creation, never the reverse.
+
+## Current Status
+
+ORGAN-VII is in **early development**. The organizational infrastructure exists on GitHub, but substantive distribution repositories have not yet been created. Content syndication will begin once flagship READMEs, process essays (ORGAN-V deliverables), and cross-organ validation (Phase 2) provide material worth amplifying.
+
+Planned repositories:
+- `posse-distribution` — POSSE syndication infrastructure and content pipeline
+- `announcements` — Release notes, milestones, and public updates
+- `brand-kit` — Visual identity, logos, badges, and brand guidelines
 
 ---
 
