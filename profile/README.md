@@ -4,7 +4,9 @@
 
 > The proclamation layer for the organvm system — POSSE distribution, content syndication, announcements, and public communication that carries the system's work to audiences beyond GitHub.
 
-[Philosophy](#philosophy) | [What This Organ Does](#what-this-organ-does) | [Distribution Strategy](#distribution-strategy) | [Planned Capabilities](#planned-capabilities) | [Place in the Eight-Organ System](#place-in-the-eight-organ-system) | [Current Status](#current-status)
+**4 repositories · 3 SKELETON · 1 DESIGN_ONLY**
+
+[Philosophy](#philosophy) | [What This Organ Does](#what-this-organ-does) | [Distribution Strategy](#distribution-strategy) | [Repositories](#repositories) | [Place in the Eight-Organ System](#place-in-the-eight-organ-system)
 
 ---
 
@@ -34,19 +36,19 @@ ORGAN-VII implements a **POSSE strategy** — Publish on Own Site, Syndicate Els
 3. **Public Process** — ORGAN-V produces essays and methodology reflections that contextualize the work
 4. **Proclamation** — ORGAN-VII syndicates finished material to external platforms, always linking back to the canonical source
 
-Each piece of content has a **single source of truth** (the organvm repository) and multiple syndicated copies with backlinks. This ensures the system owns its narrative while still reaching audiences where they already are. The system never depends on any external platform for its canonical record.
+Each piece of content has a **single source of truth** (the organvm repository) and multiple syndicated copies with backlinks. POSSE syndication to Mastodon and Discord is verified and operational.
 
-## Planned Capabilities
+## Repositories
 
-**POSSE Syndication Pipeline** — Automated distribution infrastructure that publishes updates from organvm repositories to external platforms. Initial targets include social media threads, newsletter digests, and portfolio site updates.
-
-**Announcement Workflows** — Structured templates for release notes, milestone communications, and cross-organ progress reports. Announcements translate internal development milestones into narratives that external audiences can follow.
-
-**Newsletter System** — Periodic digests aggregating significant developments across the eight-organ system, written in the public-process voice established by ORGAN-V.
-
-**Brand Kit** — Visual identity system ensuring consistent presentation across all eight orgs — logos, color schemes (per-organ palette), badge templates, typography guidelines, and presentation materials.
+| Repository | Description | Status |
+|:-----------|:------------|:------:|
+| [social-automation](https://github.com/organvm-vii-kerygma/social-automation) | POSSE syndication infrastructure and content pipeline | SKELETON |
+| [distribution-strategy](https://github.com/organvm-vii-kerygma/distribution-strategy) | Distribution strategy documentation and channel architecture | SKELETON |
+| [announcement-templates](https://github.com/organvm-vii-kerygma/announcement-templates) | Release notes, milestones, and public update templates | SKELETON |
 
 ## Place in the Eight-Organ System
+
+The organvm system spans 81 repositories across 8 organizations, ~320K words of documentation, and 16 published essays.
 
 | Organ | Relationship to ORGAN-VII |
 |-------|---------------------------|
@@ -61,14 +63,7 @@ Each piece of content has a **single source of truth** (the organvm repository) 
 
 **Dependency direction:** ORGAN-VII is a pure consumer. It amplifies what exists across all other organs but creates no upstream obligations. No back-edges — marketing follows creation, never the reverse.
 
-## Current Status
-
-ORGAN-VII is in **early development**. The organizational infrastructure exists on GitHub, but substantive distribution repositories have not yet been created. Content syndication will begin once flagship READMEs, process essays (ORGAN-V deliverables), and cross-organ validation (Phase 2) provide material worth amplifying.
-
-Planned repositories:
-- `posse-distribution` — POSSE syndication infrastructure and content pipeline
-- `announcements` — Release notes, milestones, and public updates
-- `brand-kit` — Visual identity, logos, badges, and brand guidelines
+> **Read the public process:** [organvm-v-logos.github.io/public-process](https://organvm-v-logos.github.io/public-process/)
 
 ---
 
@@ -76,4 +71,4 @@ Planned repositories:
 **System:** [organvm eight-organ system](https://github.com/meta-organvm)
 **Author:** [@4444J99](https://github.com/4444J99)
 
-*Last updated: 2026-02-10*
+*CONSOLIDATION-II Sprint 2026-02-12*
