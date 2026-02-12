@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: ORGAN System Documentation
+    url: https://github.com/meta-organvm/organvm-corpvs-testamentvm
+    about: "Full system documentation and governance corpus"
