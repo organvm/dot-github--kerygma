@@ -1,0 +1,18 @@
+# seed.yaml — Automation Contract for organvm-vii-kerygma/.github
+# Schema: seed/v1.0
+# Generated: 2026-02-12 (AUTONOMY Sprint)
+# Category: infrastructure
+
+schema_version: "1.0"
+organ: VII
+organ_name: Marketing
+repo: .github
+org: organvm-vii-kerygma
+
+metadata:
+  implementation_status: PRODUCTION
+  tier: infrastructure
+  promotion_status: LOCAL
+  last_validated: "2026-02-10"
+  generated: "2026-02-12"
+  sprint: "AUTONOMY"
