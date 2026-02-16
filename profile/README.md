@@ -1,5 +1,7 @@
 # ORGAN-VII: Kerygma — Proclamation & Distribution
 
+_Content distribution and audience engagement_
+
 [![ORGAN-VII: Kerygma](https://img.shields.io/badge/ORGAN--VII-Kerygma-b71c1c?style=flat-square)](https://github.com/organvm-vii-kerygma)
 
 > The proclamation layer for the organvm system — POSSE distribution, content syndication, announcements, and public communication that carries the system's work to audiences beyond GitHub.
