@@ -12,21 +12,121 @@ on:
       - system-graph-updated
 
 jobs:
-  handle:
+  log-event:
     runs-on: ubuntu-latest
     steps:
       - name: Log received event
+        env:
+          EVENT_ACTION: ${{ github.event.action }}
+          EVENT_PAYLOAD: ${{ toJSON(github.event.client_payload) }}
         run: |
-          echo "Received event: ${{ github.event.action }}"
-          echo "Payload: ${{ toJSON(github.event.client_payload) }}"
+          echo "Received event: $EVENT_ACTION"
+          echo "Payload keys: $(echo "$EVENT_PAYLOAD" | jq -r 'keys[]')"
 
-      - name: Handle promotion recommendation
-        if: github.event.action == 'promotion-recommended'
+  distribute:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'essay-published' || github.event.action == 'distribution-requested'
+    steps:
+      - name: Checkout ORGAN-VII kerygma
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install packages
+        run: |
+          pip install -e "./announcement-templates[dev]"
+          pip install -e "./social-automation[dev]"
+          pip install -e "./distribution-strategy[dev]"
+
+      - name: Extract event payload
+        id: payload
+        env:
+          EVENT_PAYLOAD: ${{ toJSON(github.event.client_payload) }}
+          EVENT_ACTION: ${{ github.event.action }}
+        run: |
+          echo "event_type=$EVENT_ACTION" >> "$GITHUB_OUTPUT"
+          REPO_NAME=$(echo "$EVENT_PAYLOAD" | jq -r '.repo_name // "public-process"')
+          echo "repo_name=$REPO_NAME" >> "$GITHUB_OUTPUT"
+          CHANNELS=$(echo "$EVENT_PAYLOAD" | jq -r '.channels // "mastodon,discord"')
+          echo "channels=$CHANNELS" >> "$GITHUB_OUTPUT"
+
+      - name: Run kerygma pipeline
+        env:
+          KERYGMA_MASTODON_ACCESS_TOKEN: ${{ secrets.KERYGMA_MASTODON_ACCESS_TOKEN }}
+          KERYGMA_DISCORD_WEBHOOK_URL: ${{ secrets.KERYGMA_DISCORD_WEBHOOK_URL }}
+          KERYGMA_BLUESKY_HANDLE: ${{ secrets.KERYGMA_BLUESKY_HANDLE }}
+          KERYGMA_BLUESKY_APP_PASSWORD: ${{ secrets.KERYGMA_BLUESKY_APP_PASSWORD }}
+          PIPELINE_TEMPLATE: ${{ steps.payload.outputs.event_type }}
+          PIPELINE_REPO: ${{ steps.payload.outputs.repo_name }}
+          PIPELINE_CHANNELS: ${{ steps.payload.outputs.channels }}
+        run: |
+          python kerygma_pipeline.py dispatch \
+            --template "$PIPELINE_TEMPLATE" \
+            --repo "$PIPELINE_REPO" \
+            --channels "$PIPELINE_CHANNELS" \
+            2>&1 | tee dispatch_output.txt
+
+      - name: Post distribution report
+        if: always()
+        env:
+          EVENT_TYPE: ${{ steps.payload.outputs.event_type }}
+          REPO_NAME: ${{ steps.payload.outputs.repo_name }}
+          JOB_STATUS: ${{ job.status }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let output = 'No output captured.';
+            try {
+              output = fs.readFileSync('dispatch_output.txt', 'utf8');
+            } catch (e) {}
+
+            const eventType = process.env.EVENT_TYPE;
+            const repoName = process.env.REPO_NAME;
+            const status = process.env.JOB_STATUS;
+
+            const body = [
+              `## Distribution Report`,
+              ``,
+              `| Field | Value |`,
+              `|-------|-------|`,
+              `| Event | \`${eventType}\` |`,
+              `| Repo | \`${repoName}\` |`,
+              `| Status | ${status} |`,
+              `| Run | [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) |`,
+              ``,
+              `### Output`,
+              '```',
+              output.substring(0, 3000),
+              '```',
+            ].join('\n');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[Distribution] ${eventType} — ${repoName}`,
+              body: body,
+              labels: ['distribution-report'],
+            });
+
+  handle-promotion:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'promotion-recommended'
+    steps:
+      - name: Log promotion recommendation
+        env:
+          PAYLOAD_DETAILS: ${{ github.event.client_payload.details }}
         run: |
           echo "Promotion recommended for this org"
-          echo "Details: ${{ github.event.client_payload.details }}"
+          echo "Details: $PAYLOAD_DETAILS"
 
-      - name: Handle governance update
-        if: github.event.action == 'governance-updated'
+  handle-governance:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'governance-updated'
+    steps:
+      - name: Log governance update
         run: |
           echo "Governance rules updated — compliance check needed"
