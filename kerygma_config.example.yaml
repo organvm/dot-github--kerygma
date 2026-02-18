@@ -16,6 +16,11 @@ bluesky:
   handle: ""  # or KERYGMA_BLUESKY_HANDLE
   app_password: ""  # or KERYGMA_BLUESKY_APP_PASSWORD
 
+ghost:
+  api_url: ""  # or KERYGMA_GHOST_API_URL (e.g. https://your-ghost.com)
+  admin_api_key: ""  # or KERYGMA_GHOST_ADMIN_API_KEY ({id}:{secret} format)
+  newsletter_slug: ""  # optional — target a specific newsletter
+
 # --- Delivery ---
 
 delivery_log_path: "delivery_log.json"
@@ -46,6 +51,13 @@ channels:
     platform: bluesky
     endpoint: "https://bsky.social"
     max_length: 300
+    enabled: false
+
+  - channel_id: ghost-newsletter
+    name: "Ghost Newsletter"
+    platform: ghost
+    endpoint: ""  # Uses ghost.api_url above
+    max_length: 0  # No character limit (HTML email)
     enabled: false
 
 # --- Calendar Events ---
