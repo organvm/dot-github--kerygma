@@ -24,6 +24,7 @@ on:
       - partnership-announced
       - press-release
       - grant-update
+      - community.milestone
 
 jobs:
   log-event:
@@ -54,7 +55,8 @@ jobs:
       github.event.action == 'workshop-scheduled' ||
       github.event.action == 'partnership-announced' ||
       github.event.action == 'press-release' ||
-      github.event.action == 'grant-update'
+      github.event.action == 'grant-update' ||
+      github.event.action == 'community.milestone'
     steps:
       - name: Checkout ORGAN-VII kerygma
         uses: actions/checkout@v4
