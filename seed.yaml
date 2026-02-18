@@ -1,6 +1,6 @@
 # seed.yaml — Automation Contract for organvm-vii-kerygma/.github
 # Schema: seed/v1.0
-# Updated: 2026-02-17 (EVANGELION Sprint)
+# Updated: 2026-02-17 (PROCLAMATIO Sprint)
 # Category: infrastructure
 
 schema_version: "1.0"
@@ -15,7 +15,7 @@ metadata:
   promotion_status: DEPLOYED
   last_validated: "2026-02-17"
   generated: "2026-02-17"
-  sprint: "EVANGELION"
+  sprint: "PROCLAMATIO"
 
 packages:
   - name: kerygma_templates
@@ -25,7 +25,7 @@ packages:
   - name: kerygma_social
     repo: social-automation
     version: "1.0.0"
-    description: "Mastodon, Discord, Bluesky adapters, POSSE distributor, circuit breaker, rate limiter"
+    description: "Mastodon, Discord, Bluesky, Ghost adapters, POSSE distributor, circuit breaker, rate limiter"
   - name: kerygma_strategy
     repo: distribution-strategy
     version: "1.0.0"
@@ -102,6 +102,45 @@ produces:
     description: "Press releases authored by ORGAN-VII"
   - event: grant-update
     description: "Grant and funding updates"
+  - event: newsletter-published
+    description: "Ghost newsletter published and syndicated via POSSE"
+    consumers: [ORGAN-V]
+
+# Platform stack — full creative technologist distribution architecture
+platform_stack:
+  hub:
+    platform: ghost
+    role: "Canonical publishing, newsletter, membership"
+    status: active
+    automated: true
+  social:
+    - platform: mastodon
+      role: "Open social web presence (also via Ghost ActivityPub)"
+      status: active
+      automated: true
+    - platform: bluesky
+      role: "Town square — writers/artists community"
+      status: active
+      automated: true
+    - platform: discord
+      role: "Community server, real-time discussion"
+      status: active
+      automated: true
+  manual:
+    - platform: instagram
+      role: "Visual portfolio / gallery"
+    - platform: read.cv
+      role: "Creative technologist identity"
+    - platform: are.na
+      role: "Research / mood boarding"
+  code:
+    platform: github
+    role: "Source, process, building in public"
+    status: active
+  landing:
+    platform: bento.me
+    role: "Link-in-bio / landing page"
+    status: planned
 
 # Distribution channels
 channels:
@@ -114,6 +153,23 @@ channels:
   - name: bluesky
     status: active
     char_limit: 300
+  - name: ghost
+    status: active
+    char_limit: 0  # HTML newsletter — no character limit
   - name: linkedin
     status: planned
     char_limit: 1300
+
+# Fediverse integration
+fediverse:
+  protocol: ActivityPub
+  bridge: ghost
+  description: >
+    Ghost's native ActivityPub integration makes the newsletter a followable
+    Fediverse profile. Publishing to Ghost automatically federates content
+    to Mastodon, Threads, Flipboard, and other ActivityPub-compatible platforms.
+  handle_format: "@index@{ghost_domain}"
+  note: >
+    For newsletter content, Ghost ActivityPub federation replaces manual
+    Mastodon cross-posting. The POSSE Mastodon channel remains active for
+    short-form announcements and social engagement that differ from newsletter posts.

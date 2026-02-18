@@ -30,6 +30,7 @@ from kerygma_social.config import load_config as load_social_config
 from kerygma_social.mastodon import MastodonClient, MastodonConfig
 from kerygma_social.discord import DiscordWebhook
 from kerygma_social.bluesky import BlueskyClient, BlueskyConfig
+from kerygma_social.ghost import GhostClient, GhostConfig
 from kerygma_social.posse import PosseDistributor, Platform
 from kerygma_social.delivery_log import DeliveryLog
 from kerygma_social.rss_poller import RssPoller
@@ -129,10 +130,22 @@ class KerygmaPipeline:
                 live=cfg.live_mode,
             )
 
+        ghost = None
+        if cfg.ghost_api_url:
+            ghost = GhostClient(
+                GhostConfig(
+                    admin_api_key=cfg.ghost_admin_api_key,
+                    api_url=cfg.ghost_api_url,
+                    newsletter_slug=cfg.ghost_newsletter_slug,
+                ),
+                live=cfg.live_mode,
+            )
+
         return PosseDistributor(
             mastodon_client=mastodon,
             discord_webhook=discord,
             bluesky_client=bluesky,
+            ghost_client=ghost,
             delivery_log=self._delivery_log,
         )
 
@@ -218,7 +231,7 @@ class KerygmaPipeline:
         templates = self._engine.list_templates()
         analytics_summary = {}
         if self._analytics_store:
-            for channel in ("mastodon", "discord", "bluesky"):
+            for channel in ("mastodon", "discord", "bluesky", "ghost"):
                 records = self._analytics.get_by_channel(channel)
                 analytics_summary[channel] = {
                     "total_records": len(records),
@@ -230,11 +243,12 @@ class KerygmaPipeline:
             "template_ids": [t.template_id for t in templates],
             "event_map_entries": len(EVENT_TEMPLATE_MAP),
             "analytics": analytics_summary,
-            "delivery_log_entries": len(self._delivery_log),
+            "delivery_log_entries": self._delivery_log.total_records,
             "social_config": {
                 "mastodon": bool(self._social_config.mastodon_instance_url),
                 "discord": bool(self._social_config.discord_webhook_url),
                 "bluesky": bool(self._social_config.bluesky_handle),
+                "ghost": bool(self._social_config.ghost_api_url),
                 "live_mode": self._social_config.live_mode,
             },
         }
@@ -269,7 +283,7 @@ class KerygmaPipeline:
         lines.append(f"")
         lines.append(f"| Channel | Configured | Records | Impressions |")
         lines.append(f"|---------|------------|---------|-------------|")
-        for channel in ("mastodon", "discord", "bluesky"):
+        for channel in ("mastodon", "discord", "bluesky", "ghost"):
             configured = status["social_config"].get(channel, False)
             analytics = status.get("analytics", {}).get(channel, {})
             records = analytics.get("total_records", 0)
@@ -306,7 +320,7 @@ class KerygmaPipeline:
     ) -> dict[str, Any]:
         """Execute the full pipeline: select → render → check → dispatch → record."""
         if channels is None:
-            channels = ["mastodon", "discord"]
+            channels = ["mastodon", "discord", "ghost"]
 
         template_id = self.select_template(event_type)
         channel_texts = self.render_and_check(template_id, repo_name, channels)

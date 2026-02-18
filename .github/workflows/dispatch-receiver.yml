@@ -91,6 +91,8 @@ jobs:
           KERYGMA_DISCORD_WEBHOOK_URL: ${{ secrets.KERYGMA_DISCORD_WEBHOOK_URL }}
           KERYGMA_BLUESKY_HANDLE: ${{ secrets.KERYGMA_BLUESKY_HANDLE }}
           KERYGMA_BLUESKY_APP_PASSWORD: ${{ secrets.KERYGMA_BLUESKY_APP_PASSWORD }}
+          KERYGMA_GHOST_API_URL: ${{ secrets.KERYGMA_GHOST_API_URL }}
+          KERYGMA_GHOST_ADMIN_API_KEY: ${{ secrets.KERYGMA_GHOST_ADMIN_API_KEY }}
           PIPELINE_TEMPLATE: ${{ steps.payload.outputs.event_type }}
           PIPELINE_REPO: ${{ steps.payload.outputs.repo_name }}
           PIPELINE_CHANNELS: ${{ steps.payload.outputs.channels }}
