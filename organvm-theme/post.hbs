@@ -1,0 +1,56 @@
+{{!< default}}
+
+<article class="post-full {{post_class}}">
+    <header class="post-full-header">
+        {{#if primary_tag}}
+        <span class="post-full-tag">{{primary_tag.name}}</span>
+        {{/if}}
+        <h1 class="post-full-title">{{title}}</h1>
+        {{#if custom_excerpt}}
+        <p class="post-full-excerpt">{{custom_excerpt}}</p>
+        {{/if}}
+        <div class="post-full-meta">
+            <time datetime="{{date format="YYYY-MM-DD"}}">{{date format="D MMMM YYYY"}}</time>
+            <span class="post-full-reading-time">{{reading_time}}</span>
+        </div>
+    </header>
+
+    {{#if feature_image}}
+    <figure class="post-full-image">
+        <img
+            srcset="{{img_url feature_image size="s"}} 300w,
+                    {{img_url feature_image size="m"}} 600w,
+                    {{img_url feature_image size="l"}} 1000w,
+                    {{img_url feature_image size="xl"}} 2000w"
+            sizes="(max-width: 800px) 100vw, 800px"
+            src="{{img_url feature_image size="xl"}}"
+            alt="{{title}}"
+        />
+    </figure>
+    {{/if}}
+
+    <section class="post-full-content">
+        {{content}}
+    </section>
+
+    <footer class="post-full-footer">
+        {{#if tags}}
+        <div class="post-full-tags">
+            {{#foreach tags}}
+            <a href="{{url}}" class="tag-link">{{name}}</a>
+            {{/foreach}}
+        </div>
+        {{/if}}
+
+        <div class="post-share">
+            <a class="share-link" href="https://mastodon.social/share?text={{encode title}}%20{{url absolute="true"}}" target="_blank" rel="noopener">Share on Mastodon</a>
+            <a class="share-link" href="https://bsky.app/intent/compose?text={{encode title}}%20{{url absolute="true"}}" target="_blank" rel="noopener">Share on Bluesky</a>
+        </div>
+    </footer>
+</article>
+
+{{#if comments}}
+<section class="post-comments">
+    {{comments}}
+</section>
+{{/if}}

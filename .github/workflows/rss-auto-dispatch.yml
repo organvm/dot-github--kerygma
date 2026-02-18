@@ -1,0 +1,49 @@
+name: RSS Auto-Dispatch
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:  # Manual trigger for testing
+
+jobs:
+  poll-and-dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install packages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/announcement-templates.git"
+          pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/social-automation.git"
+          pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/distribution-strategy.git"
+          pip install pyyaml feedparser
+
+      - name: Poll and dispatch
+        env:
+          KERYGMA_MASTODON_ACCESS_TOKEN: ${{ secrets.KERYGMA_MASTODON_ACCESS_TOKEN }}
+          KERYGMA_DISCORD_WEBHOOK_URL: ${{ secrets.KERYGMA_DISCORD_WEBHOOK_URL }}
+          KERYGMA_BLUESKY_HANDLE: ${{ secrets.KERYGMA_BLUESKY_HANDLE }}
+          KERYGMA_BLUESKY_APP_PASSWORD: ${{ secrets.KERYGMA_BLUESKY_APP_PASSWORD }}
+          KERYGMA_GHOST_API_URL: ${{ secrets.KERYGMA_GHOST_API_URL }}
+          KERYGMA_GHOST_ADMIN_API_KEY: ${{ secrets.KERYGMA_GHOST_ADMIN_API_KEY }}
+          KERYGMA_LIVE_MODE: "true"
+        run: |
+          echo "Polling RSS feed for new entries..."
+          python kerygma_pipeline.py poll 2>&1 | tee poll_output.txt
+
+          NEW_COUNT=$(grep -c "^  -" poll_output.txt || true)
+          echo "Found $NEW_COUNT new entries."
+
+          if [ "$NEW_COUNT" -gt 0 ]; then
+            python kerygma_pipeline.py dispatch \
+              --template essay-announce \
+              --repo public-process \
+              --channels mastodon,discord,bluesky,ghost \
+              2>&1 | tee dispatch_output.txt
+          fi

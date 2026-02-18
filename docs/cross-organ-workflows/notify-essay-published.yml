@@ -1,0 +1,20 @@
+# Deploy this to: organvm-v-logos/public-process/.github/workflows/notify-essay-published.yml
+# Triggers ORGAN-VII distribution when new essays are pushed.
+name: Notify Essay Published
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '_posts/**'
+      - 'essays/**'
+
+jobs:
+  notify:
+    uses: organvm-vii-kerygma/.github/.github/workflows/notify-kerygma.yml@main
+    with:
+      event_type: essay-published
+      repo_name: public-process
+      channels: mastodon,discord,bluesky,ghost
+    secrets:
+      DISPATCH_TOKEN: ${{ secrets.CROSS_ORG_DISPATCH_TOKEN }}

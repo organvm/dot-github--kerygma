@@ -1,0 +1,18 @@
+# Deploy this to: any ORGAN-III repo's .github/workflows/notify-feature-released.yml
+# Triggers ORGAN-VII distribution when a GitHub release is published.
+# Target repos: public-record-data-scrapper, fetch-familiar-friends, tab-bookmark-manager
+name: Notify Feature Released
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  notify:
+    uses: organvm-vii-kerygma/.github/.github/workflows/notify-kerygma.yml@main
+    with:
+      event_type: feature-released
+      repo_name: ${{ github.event.repository.name }}
+      channels: mastodon,discord,bluesky,ghost
+    secrets:
+      DISPATCH_TOKEN: ${{ secrets.CROSS_ORG_DISPATCH_TOKEN }}

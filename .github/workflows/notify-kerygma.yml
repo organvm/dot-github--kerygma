@@ -22,7 +22,7 @@ on:
       channels:
         required: false
         type: string
-        default: "mastodon,discord,bluesky"
+        default: "mastodon,discord,bluesky,ghost"
         description: "Comma-separated distribution channels"
     secrets:
       DISPATCH_TOKEN:

@@ -1,0 +1,21 @@
+<header class="site-header">
+    <div class="site-header-inner">
+        <a class="site-logo" href="{{@site.url}}">
+            {{#if @site.logo}}
+            <img src="{{@site.logo}}" alt="{{@site.title}}">
+            {{else}}
+            <span class="site-logo-text">ORGANVM</span>
+            {{/if}}
+        </a>
+
+        {{> navigation}}
+
+        <div class="site-header-actions">
+            {{#if @member}}
+            <a class="site-header-link" href="/account/">Account</a>
+            {{else}}
+            <a class="site-header-link site-header-subscribe" href="#/portal/signup">Subscribe</a>
+            {{/if}}
+        </div>
+    </div>
+</header>

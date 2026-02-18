@@ -146,6 +146,28 @@ jobs:
               labels: ['distribution-report'],
             });
 
+  update-badge:
+    runs-on: ubuntu-latest
+    needs: distribute
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Update status badge
+        run: python scripts/update-status-badge.py
+
+      - name: Commit badge update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/status-badge.json
+          git diff --cached --quiet || git commit -m "badge: update pipeline status"
+          git push
+
   handle-promotion:
     runs-on: ubuntu-latest
     if: github.event.action == 'promotion-recommended'

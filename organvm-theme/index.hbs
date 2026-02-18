@@ -1,0 +1,88 @@
+{{!< default}}
+
+<div class="site-hero">
+    <h1 class="site-title">{{@site.title}}</h1>
+    {{#if @site.description}}
+    <p class="site-description">{{@site.description}}</p>
+    {{/if}}
+</div>
+
+<section class="organ-map">
+    <h2>The Eight Organs</h2>
+    <div class="organ-grid">
+        <a href="https://github.com/organvm-i-theoria" class="organ-card organ-i">
+            <span class="organ-numeral">I</span>
+            <span class="organ-name">Theoria</span>
+            <span class="organ-role">Philosophy &amp; Frameworks</span>
+        </a>
+        <a href="https://github.com/organvm-ii-poiesis" class="organ-card organ-ii">
+            <span class="organ-numeral">II</span>
+            <span class="organ-name">Poiesis</span>
+            <span class="organ-role">Art &amp; Creation</span>
+        </a>
+        <a href="https://github.com/organvm-iii-ergon" class="organ-card organ-iii">
+            <span class="organ-numeral">III</span>
+            <span class="organ-name">Ergon</span>
+            <span class="organ-role">Engineering &amp; Products</span>
+        </a>
+        <a href="https://github.com/organvm-iv-taxis" class="organ-card organ-iv">
+            <span class="organ-numeral">IV</span>
+            <span class="organ-name">Taxis</span>
+            <span class="organ-role">Orchestration &amp; Governance</span>
+        </a>
+        <a href="https://github.com/organvm-v-logos" class="organ-card organ-v">
+            <span class="organ-numeral">V</span>
+            <span class="organ-name">Logos</span>
+            <span class="organ-role">Essays &amp; Public Process</span>
+        </a>
+        <a href="https://github.com/organvm-vi-koinonia" class="organ-card organ-vi">
+            <span class="organ-numeral">VI</span>
+            <span class="organ-name">Koinonia</span>
+            <span class="organ-role">Community &amp; Collaboration</span>
+        </a>
+        <a href="https://github.com/organvm-vii-kerygma" class="organ-card organ-vii">
+            <span class="organ-numeral">VII</span>
+            <span class="organ-name">Kerygma</span>
+            <span class="organ-role">Distribution &amp; Proclamation</span>
+        </a>
+        <a href="https://github.com/meta-organvm" class="organ-card organ-meta">
+            <span class="organ-numeral">VIII</span>
+            <span class="organ-name">Meta</span>
+            <span class="organ-role">System Governance</span>
+        </a>
+    </div>
+</section>
+
+<section class="post-feed">
+    {{#foreach posts}}
+    <article class="post-card {{post_class}}">
+        {{#if feature_image}}
+        <a class="post-card-image-link" href="{{url}}">
+            <img class="post-card-image"
+                srcset="{{img_url feature_image size="s"}} 300w,
+                        {{img_url feature_image size="m"}} 600w,
+                        {{img_url feature_image size="l"}} 1000w"
+                sizes="(max-width: 600px) 300px, (max-width: 1000px) 600px, 1000px"
+                src="{{img_url feature_image size="m"}}"
+                alt="{{title}}"
+                loading="lazy"
+            />
+        </a>
+        {{/if}}
+        <div class="post-card-content">
+            <h2 class="post-card-title"><a href="{{url}}">{{title}}</a></h2>
+            {{#if custom_excerpt}}
+            <p class="post-card-excerpt">{{custom_excerpt}}</p>
+            {{else}}
+            <p class="post-card-excerpt">{{excerpt words="30"}}</p>
+            {{/if}}
+            <div class="post-card-meta">
+                <time datetime="{{date format="YYYY-MM-DD"}}">{{date format="D MMM YYYY"}}</time>
+                <span class="post-card-reading-time">{{reading_time}}</span>
+            </div>
+        </div>
+    </article>
+    {{/foreach}}
+</section>
+
+{{pagination}}
