@@ -10,6 +10,20 @@ on:
       - distribution-requested
       - governance-updated
       - system-graph-updated
+      - research-published
+      - framework-updated
+      - artwork-released
+      - performance-scheduled
+      - feature-released
+      - bugfix-released
+      - repo-launched
+      - milestone-reached
+      - audit-completed
+      - salon-scheduled
+      - workshop-scheduled
+      - partnership-announced
+      - press-release
+      - grant-update
 
 jobs:
   log-event:
@@ -25,7 +39,22 @@ jobs:
 
   distribute:
     runs-on: ubuntu-latest
-    if: github.event.action == 'essay-published' || github.event.action == 'distribution-requested'
+    if: >-
+      github.event.action == 'essay-published' ||
+      github.event.action == 'distribution-requested' ||
+      github.event.action == 'research-published' ||
+      github.event.action == 'framework-updated' ||
+      github.event.action == 'artwork-released' ||
+      github.event.action == 'performance-scheduled' ||
+      github.event.action == 'feature-released' ||
+      github.event.action == 'bugfix-released' ||
+      github.event.action == 'repo-launched' ||
+      github.event.action == 'milestone-reached' ||
+      github.event.action == 'salon-scheduled' ||
+      github.event.action == 'workshop-scheduled' ||
+      github.event.action == 'partnership-announced' ||
+      github.event.action == 'press-release' ||
+      github.event.action == 'grant-update'
     steps:
       - name: Checkout ORGAN-VII kerygma
         uses: actions/checkout@v4
@@ -36,10 +65,13 @@ jobs:
           python-version: "3.12"
 
       - name: Install packages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pip install -e "./announcement-templates[dev]"
-          pip install -e "./social-automation[dev]"
-          pip install -e "./distribution-strategy[dev]"
+          pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/announcement-templates.git"
+          pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/social-automation.git"
+          pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/distribution-strategy.git"
+          pip install pyyaml feedparser
 
       - name: Extract event payload
         id: payload

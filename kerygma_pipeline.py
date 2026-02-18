@@ -200,6 +200,39 @@ class KerygmaPipeline:
             ))
         self._analytics.flush()
 
+    def status(self) -> dict[str, Any]:
+        """Return a health report: loaded templates, analytics summary, config state."""
+        templates = self._engine.list_templates()
+        analytics_summary = {}
+        if self._analytics_store:
+            for channel in ("mastodon", "discord", "bluesky"):
+                records = self._analytics.get_by_channel(channel)
+                analytics_summary[channel] = {
+                    "total_records": len(records),
+                    "total_impressions": sum(r.impressions for r in records),
+                }
+
+        return {
+            "templates_loaded": len(templates),
+            "template_ids": [t.template_id for t in templates],
+            "event_map_entries": len(EVENT_TEMPLATE_MAP),
+            "analytics": analytics_summary,
+            "delivery_log_entries": len(self._delivery_log),
+            "social_config": {
+                "mastodon": bool(self._social_config.mastodon_instance_url),
+                "discord": bool(self._social_config.discord_webhook_url),
+                "bluesky": bool(self._social_config.bluesky_handle),
+                "live_mode": self._social_config.live_mode,
+            },
+        }
+
+    def preview(self, template_id: str, repo_name: str, channel: str) -> str:
+        """Render a single template+channel for preview without dispatching."""
+        event = EventContext(event_type=template_id, repo_name=repo_name)
+        context = self._registry.build_context(event, repo_name)
+        render = self._engine.render(template_id, context, channel)
+        return render.text
+
     def poll_for_events(self) -> list[dict[str, str]]:
         """Poll RSS feed for new content entries."""
         if not self._social_config.rss_feed_url:
@@ -255,6 +288,12 @@ def main(argv: list[str] | None = None) -> None:
 
     sub.add_parser("poll", help="Poll RSS for new events")
     sub.add_parser("templates", help="List available templates")
+    sub.add_parser("status", help="Pipeline health report")
+
+    preview_p = sub.add_parser("preview", help="Render template preview without dispatching")
+    preview_p.add_argument("--template", required=True, help="Template ID")
+    preview_p.add_argument("--repo", required=True, help="Repository name")
+    preview_p.add_argument("--channel", default="mastodon", help="Channel to preview")
 
     args = parser.parse_args(argv)
     if not args.command:
@@ -288,6 +327,12 @@ def main(argv: list[str] | None = None) -> None:
     elif args.command == "templates":
         for t in pipeline._engine.list_templates():
             print(f"  {t.template_id}: {', '.join(t.channels)}")
+    elif args.command == "status":
+        report = pipeline.status()
+        print(json.dumps(report, indent=2))
+    elif args.command == "preview":
+        text = pipeline.preview(args.template, args.repo, args.channel)
+        print(text)
 
 
 if __name__ == "__main__":
