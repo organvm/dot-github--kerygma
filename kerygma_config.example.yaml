@@ -1,0 +1,73 @@
+# Unified ORGAN-VII Kerygma Configuration
+# Copy to kerygma_config.yaml and fill in credentials.
+# Environment variables (KERYGMA_ prefix) override YAML values.
+
+# --- Social Platforms ---
+
+mastodon:
+  instance_url: "https://mastodon.social"
+  access_token: ""  # or KERYGMA_MASTODON_ACCESS_TOKEN
+  visibility: public
+
+discord:
+  webhook_url: ""  # or KERYGMA_DISCORD_WEBHOOK_URL
+
+bluesky:
+  handle: ""  # or KERYGMA_BLUESKY_HANDLE
+  app_password: ""  # or KERYGMA_BLUESKY_APP_PASSWORD
+
+# --- Delivery ---
+
+delivery_log_path: "delivery_log.json"
+rss_feed_url: "https://organvm-v-logos.github.io/public-process/feed.xml"
+live_mode: false  # Set true for production posting
+
+# --- Distribution Strategy ---
+
+analytics_store_path: "analytics.json"
+
+channels:
+  - channel_id: mastodon-primary
+    name: "Mastodon Primary"
+    platform: mastodon
+    endpoint: "https://mastodon.social"
+    max_length: 500
+    enabled: true
+
+  - channel_id: discord-announcements
+    name: "Discord Announcements"
+    platform: discord
+    endpoint: ""
+    max_length: 4096
+    enabled: true
+
+  - channel_id: bluesky-primary
+    name: "Bluesky Primary"
+    platform: bluesky
+    endpoint: "https://bsky.social"
+    max_length: 300
+    enabled: false
+
+# --- Calendar Events ---
+
+calendar:
+  events:
+    - event_id: knight-2026
+      name: "Knight Foundation Deadline"
+      event_type: grant_deadline
+      start_date: "2026-04-15"
+      posting_modifier: 1.5
+
+    - event_id: siggraph-2026
+      name: "SIGGRAPH 2026"
+      event_type: conference
+      start_date: "2026-07-27"
+      end_date: "2026-07-31"
+      posting_modifier: 1.5
+
+    - event_id: winter-break
+      name: "Winter Holiday Quiet Period"
+      event_type: quiet_period
+      start_date: "2026-12-23"
+      end_date: "2027-01-02"
+      posting_modifier: 0.3

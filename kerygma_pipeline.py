@@ -1,0 +1,294 @@
+"""Kerygma Pipeline — full orchestrator for ORGAN VII distribution.
+
+Ties together announcement-templates, social-automation, and distribution-strategy
+into a single end-to-end pipeline:
+  poll → select template → render → quality check → dispatch → record analytics
+
+Usage:
+    python kerygma_pipeline.py dispatch --template <id> --repo <name> [--channels mastodon,discord]
+    python kerygma_pipeline.py poll
+    python kerygma_pipeline.py --help
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import uuid
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+# --- Imports from the three ORGAN-VII packages ---
+
+from kerygma_templates.engine import TemplateEngine
+from kerygma_templates.quality_checker import QualityChecker
+from kerygma_templates.registry_loader import RegistryLoader, EventContext
+
+from kerygma_social.config import load_config as load_social_config
+from kerygma_social.mastodon import MastodonClient, MastodonConfig
+from kerygma_social.discord import DiscordWebhook
+from kerygma_social.bluesky import BlueskyClient, BlueskyConfig
+from kerygma_social.posse import PosseDistributor, Platform
+from kerygma_social.delivery_log import DeliveryLog
+from kerygma_social.rss_poller import RssPoller
+
+from kerygma_strategy.analytics import AnalyticsCollector, EngagementMetric
+from kerygma_strategy.persistence import JsonStore
+
+
+# --- Default paths ---
+
+TEMPLATES_DIR = Path(__file__).parent / "announcement-templates" / "templates"
+REGISTRY_PATH = Path.home() / "Workspace/organvm-iv-taxis/orchestration-start-here/registry.json"
+
+
+# --- Template-to-event mapping ---
+
+EVENT_TEMPLATE_MAP: dict[str, str] = {
+    "essay-published": "essay-announce",
+    "repo-launched": "repo-launch",
+    "organ-launched": "organ-launch",
+    "feature-released": "feature-release",
+    "bugfix-released": "bugfix-release",
+    "breaking-change": "breaking-change",
+    "milestone-reached": "system-milestone",
+    "salon-scheduled": "salon-invite",
+    "workshop-scheduled": "workshop-sprint",
+    "press-release": "press-release",
+    "partnership-announced": "partnership",
+    "grant-update": "grant-supplement",
+}
+
+
+class KerygmaPipeline:
+    """End-to-end distribution pipeline for ORGAN VII."""
+
+    def __init__(
+        self,
+        templates_dir: Path = TEMPLATES_DIR,
+        registry_path: Path | None = None,
+        social_config_path: Path | None = None,
+        analytics_store_path: Path | None = None,
+    ) -> None:
+        # Template engine
+        self._engine = TemplateEngine()
+        if templates_dir.is_dir():
+            self._engine.load_directory(templates_dir)
+        self._checker = QualityChecker()
+
+        # Registry
+        reg_path = registry_path or REGISTRY_PATH
+        self._registry = RegistryLoader(reg_path if reg_path.exists() else None)
+
+        # Social config
+        self._social_config = load_social_config(social_config_path)
+
+        # Analytics
+        self._analytics_store = JsonStore(analytics_store_path) if analytics_store_path else None
+        self._analytics = AnalyticsCollector(store=self._analytics_store)
+
+        # Delivery log
+        log_path = Path(self._social_config.delivery_log_path) if self._social_config.delivery_log_path else None
+        self._delivery_log = DeliveryLog(log_path)
+
+    def _build_distributor(self) -> PosseDistributor:
+        cfg = self._social_config
+        mastodon = None
+        if cfg.mastodon_instance_url:
+            mastodon = MastodonClient(
+                MastodonConfig(
+                    instance_url=cfg.mastodon_instance_url,
+                    access_token=cfg.mastodon_access_token,
+                ),
+                live=cfg.live_mode,
+            )
+
+        discord = None
+        if cfg.discord_webhook_url:
+            discord = DiscordWebhook(cfg.discord_webhook_url, live=cfg.live_mode)
+
+        bluesky = None
+        if cfg.bluesky_handle:
+            bluesky = BlueskyClient(
+                BlueskyConfig(handle=cfg.bluesky_handle, app_password=cfg.bluesky_app_password),
+                live=cfg.live_mode,
+            )
+
+        return PosseDistributor(
+            mastodon_client=mastodon,
+            discord_webhook=discord,
+            bluesky_client=bluesky,
+            delivery_log=self._delivery_log,
+        )
+
+    def select_template(self, event_type: str) -> str:
+        """Map an event type to a template ID."""
+        template_id = EVENT_TEMPLATE_MAP.get(event_type)
+        if not template_id:
+            raise ValueError(f"No template mapped for event type: {event_type}")
+        if not self._engine.get_template(template_id):
+            raise ValueError(f"Template '{template_id}' not found in engine")
+        return template_id
+
+    def render_and_check(
+        self,
+        template_id: str,
+        repo_name: str,
+        channels: list[str],
+        event: EventContext | None = None,
+    ) -> dict[str, str]:
+        """Render a template for all channels and run quality checks.
+
+        Returns: {channel: rendered_text} for channels that pass checks.
+        """
+        if event is None:
+            event = EventContext(
+                event_type=template_id,
+                repo_name=repo_name,
+            )
+
+        context = self._registry.build_context(event, repo_name)
+        results: dict[str, str] = {}
+
+        for channel in channels:
+            render = self._engine.render(template_id, context, channel)
+            report = self._checker.check(
+                render.text, channel, template_id, render.unresolved_vars,
+            )
+            if report.passed:
+                results[channel] = render.text
+            else:
+                errors = "; ".join(c.message for c in report.errors)
+                print(f"  [SKIP] {template_id}/{channel}: {errors}", file=sys.stderr)
+
+        return results
+
+    def dispatch(self, channel_texts: dict[str, str]) -> list[dict[str, Any]]:
+        """Dispatch rendered texts to platforms via POSSE."""
+        distributor = self._build_distributor()
+        records = []
+
+        for channel, text in channel_texts.items():
+            platform = Platform(channel)
+            post = distributor.create_post(
+                post_id=f"pipeline-{channel}-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:8]}",
+                title=text[:100],
+                body=text,
+                canonical_url="",
+                platforms=[platform],
+            )
+            syndication = distributor.syndicate(post.post_id)
+            for rec in syndication:
+                records.append({
+                    "channel": channel,
+                    "status": rec.status.value,
+                    "url": rec.external_url or "",
+                    "error": rec.error or "",
+                })
+        return records
+
+    def record_analytics(self, records: list[dict[str, Any]]) -> None:
+        """Record dispatch results as analytics metrics."""
+        for rec in records:
+            self._analytics.record(EngagementMetric(
+                channel_id=rec["channel"],
+                content_id=f"dispatch-{datetime.now().strftime('%Y%m%d')}",
+                timestamp=datetime.now(),
+                impressions=1 if rec["status"] == "published" else 0,
+            ))
+        self._analytics.flush()
+
+    def poll_for_events(self) -> list[dict[str, str]]:
+        """Poll RSS feed for new content entries."""
+        if not self._social_config.rss_feed_url:
+            return []
+        poller = RssPoller(feed_url=self._social_config.rss_feed_url)
+        entries = poller.poll()
+        return [
+            {"title": e.title, "url": e.url, "id": e.entry_id}
+            for e in entries
+        ]
+
+    def run_full_pipeline(
+        self,
+        event_type: str,
+        repo_name: str,
+        channels: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Execute the full pipeline: select → render → check → dispatch → record."""
+        if channels is None:
+            channels = ["mastodon", "discord"]
+
+        template_id = self.select_template(event_type)
+        channel_texts = self.render_and_check(template_id, repo_name, channels)
+
+        if not channel_texts:
+            return {"status": "no_channels_passed", "dispatched": 0}
+
+        records = self.dispatch(channel_texts)
+        self.record_analytics(records)
+
+        return {
+            "status": "complete",
+            "template": template_id,
+            "dispatched": len(records),
+            "records": records,
+        }
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        prog="kerygma_pipeline",
+        description="ORGAN VII Kerygma distribution pipeline",
+    )
+    parser.add_argument("--social-config", type=Path, default=None)
+    parser.add_argument("--analytics-store", type=Path, default=None)
+    sub = parser.add_subparsers(dest="command")
+
+    dispatch_p = sub.add_parser("dispatch", help="Render + dispatch announcement")
+    dispatch_p.add_argument("--template", required=True, help="Template ID")
+    dispatch_p.add_argument("--repo", required=True, help="Repository name")
+    dispatch_p.add_argument("--channels", default="mastodon,discord",
+                            help="Comma-separated channels")
+
+    sub.add_parser("poll", help="Poll RSS for new events")
+    sub.add_parser("templates", help="List available templates")
+
+    args = parser.parse_args(argv)
+    if not args.command:
+        parser.print_help()
+        return
+
+    pipeline = KerygmaPipeline(
+        social_config_path=args.social_config,
+        analytics_store_path=args.analytics_store,
+    )
+
+    if args.command == "dispatch":
+        channels = [c.strip() for c in args.channels.split(",")]
+        event = EventContext(
+            event_type=args.template,
+            repo_name=args.repo,
+        )
+        channel_texts = pipeline.render_and_check(args.template, args.repo, channels, event)
+        if channel_texts:
+            records = pipeline.dispatch(channel_texts)
+            pipeline.record_analytics(records)
+            for r in records:
+                print(f"  [{r['status'].upper()}] {r['channel']}: {r['url'] or r['error']}")
+        else:
+            print("No channels passed quality checks.")
+    elif args.command == "poll":
+        events = pipeline.poll_for_events()
+        print(f"Found {len(events)} new events.")
+        for ev in events:
+            print(f"  - {ev['title']}: {ev['url']}")
+    elif args.command == "templates":
+        for t in pipeline._engine.list_templates():
+            print(f"  {t.template_id}: {', '.join(t.channels)}")
+
+
+if __name__ == "__main__":
+    main()
