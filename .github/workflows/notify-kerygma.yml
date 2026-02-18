@@ -1,0 +1,48 @@
+name: Notify Kerygma (Reusable)
+
+# Reusable workflow that source organs call to notify ORGAN-VII of events.
+# Usage from a calling workflow:
+#   uses: organvm-vii-kerygma/.github/.github/workflows/notify-kerygma.yml@main
+#   with:
+#     event_type: essay-published
+#     repo_name: public-process
+#     channels: mastodon,discord,bluesky
+
+on:
+  workflow_call:
+    inputs:
+      event_type:
+        required: true
+        type: string
+        description: "Event type matching EVENT_TEMPLATE_MAP keys"
+      repo_name:
+        required: true
+        type: string
+        description: "Source repository name"
+      channels:
+        required: false
+        type: string
+        default: "mastodon,discord,bluesky"
+        description: "Comma-separated distribution channels"
+    secrets:
+      DISPATCH_TOKEN:
+        required: true
+        description: "PAT with repo scope for cross-org dispatch"
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send repository_dispatch to ORGAN-VII
+        env:
+          GH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          EVENT_TYPE: ${{ inputs.event_type }}
+          REPO_NAME: ${{ inputs.repo_name }}
+          CHANNELS: ${{ inputs.channels }}
+        run: |
+          curl -s -X POST \
+            -H "Authorization: token ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/organvm-vii-kerygma/.github/dispatches" \
+            -d "{\"event_type\":\"${EVENT_TYPE}\",\"client_payload\":{\"repo_name\":\"${REPO_NAME}\",\"channels\":\"${CHANNELS}\"}}"
+          echo "Dispatched ${EVENT_TYPE} for ${REPO_NAME} to ORGAN-VII"

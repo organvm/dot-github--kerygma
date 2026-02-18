@@ -47,18 +47,31 @@ REGISTRY_PATH = Path.home() / "Workspace/organvm-iv-taxis/orchestration-start-he
 # --- Template-to-event mapping ---
 
 EVENT_TEMPLATE_MAP: dict[str, str] = {
-    "essay-published": "essay-announce",
-    "repo-launched": "repo-launch",
-    "organ-launched": "organ-launch",
+    # ORGAN-I: Theoria
+    "research-published": "essay-announce",
+    "framework-updated": "feature-release",
+    # ORGAN-II: Poiesis
+    "artwork-released": "repo-launch",
+    "performance-scheduled": "salon-invite",
+    # ORGAN-III: Ergon
     "feature-released": "feature-release",
     "bugfix-released": "bugfix-release",
-    "breaking-change": "breaking-change",
+    "repo-launched": "repo-launch",
+    # ORGAN-IV: Taxis
     "milestone-reached": "system-milestone",
+    "audit-completed": "system-milestone",
+    # ORGAN-V: Logos
+    "essay-published": "essay-announce",
+    # ORGAN-VI: Koinonia
     "salon-scheduled": "salon-invite",
     "workshop-scheduled": "workshop-sprint",
-    "press-release": "press-release",
     "partnership-announced": "partnership",
+    # ORGAN-VII: Kerygma
+    "press-release": "press-release",
     "grant-update": "grant-supplement",
+    # System-level
+    "organ-launched": "organ-launch",
+    "breaking-change": "breaking-change",
 }
 
 

@@ -1,18 +1,119 @@
 # seed.yaml — Automation Contract for organvm-vii-kerygma/.github
 # Schema: seed/v1.0
-# Generated: 2026-02-12 (AUTONOMY Sprint)
+# Updated: 2026-02-17 (EVANGELION Sprint)
 # Category: infrastructure
 
 schema_version: "1.0"
 organ: VII
-organ_name: Marketing
+organ_name: Kerygma
 repo: .github
 org: organvm-vii-kerygma
 
 metadata:
   implementation_status: PRODUCTION
   tier: infrastructure
-  promotion_status: LOCAL
-  last_validated: "2026-02-10"
-  generated: "2026-02-12"
-  sprint: "AUTONOMY"
+  promotion_status: DEPLOYED
+  last_validated: "2026-02-17"
+  generated: "2026-02-17"
+  sprint: "EVANGELION"
+
+packages:
+  - name: kerygma_templates
+    repo: announcement-templates
+    version: "1.0.0"
+    description: "Template engine, quality checker, registry loader, 15 multi-channel templates"
+  - name: kerygma_social
+    repo: social-automation
+    version: "1.0.0"
+    description: "Mastodon, Discord, Bluesky adapters, POSSE distributor, circuit breaker, rate limiter"
+  - name: kerygma_strategy
+    repo: distribution-strategy
+    version: "1.0.0"
+    description: "Analytics, calendar scheduling, report generator, persistence layer"
+  - name: kerygma_pipeline
+    repo: .github
+    version: "1.0.0"
+    description: "Root orchestrator tying all three packages into end-to-end pipeline"
+
+agents:
+  - name: dispatch-receiver
+    trigger: repository_dispatch
+    workflow: .github/workflows/dispatch-receiver.yml
+    description: "Receives cross-organ events and runs pipeline"
+  - name: ci-pipeline
+    trigger: on_push
+    workflow: .github/workflows/ci-pipeline.yml
+    description: "CI for root pipeline tests"
+
+# Events this organ subscribes to (inbound from other organs)
+subscriptions:
+  # ORGAN-I: Theoria
+  - event: research-published
+    source: ORGAN-I
+    action: Render and distribute research announcement
+  - event: framework-updated
+    source: ORGAN-I
+    action: Render and distribute framework update
+  # ORGAN-II: Poiesis
+  - event: artwork-released
+    source: ORGAN-II
+    action: Render and distribute artwork announcement
+  - event: performance-scheduled
+    source: ORGAN-II
+    action: Render and distribute performance invitation
+  # ORGAN-III: Ergon
+  - event: feature-released
+    source: ORGAN-III
+    action: Render and distribute feature release
+  - event: bugfix-released
+    source: ORGAN-III
+    action: Render and distribute bugfix notice
+  - event: repo-launched
+    source: ORGAN-III
+    action: Render and distribute repo launch
+  # ORGAN-IV: Taxis
+  - event: milestone-reached
+    source: ORGAN-IV
+    action: Render and distribute milestone announcement
+  - event: audit-completed
+    source: ORGAN-IV
+    action: Render and distribute audit completion
+  # ORGAN-V: Logos
+  - event: essay-published
+    source: ORGAN-V
+    action: Render and distribute essay announcement
+  # ORGAN-VI: Koinonia
+  - event: salon-scheduled
+    source: ORGAN-VI
+    action: Render and distribute salon invitation
+  - event: workshop-scheduled
+    source: ORGAN-VI
+    action: Render and distribute workshop announcement
+  - event: partnership-announced
+    source: ORGAN-VI
+    action: Render and distribute partnership announcement
+
+# Events this organ emits (outbound)
+produces:
+  - event: distribution-completed
+    description: "Emitted after successful POSSE distribution"
+    consumers: [ORGAN-IV, ORGAN-V]
+  - event: press-release
+    description: "Press releases authored by ORGAN-VII"
+  - event: grant-update
+    description: "Grant and funding updates"
+
+# Distribution channels
+channels:
+  - name: mastodon
+    status: active
+    char_limit: 500
+  - name: discord
+    status: active
+    char_limit: 4096
+  - name: bluesky
+    status: active
+    char_limit: 300
+  - name: linkedin
+    status: planned
+    char_limit: 1300
