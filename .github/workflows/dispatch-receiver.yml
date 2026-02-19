@@ -111,7 +111,7 @@ jobs:
           EVENT_TYPE: ${{ steps.payload.outputs.event_type }}
           REPO_NAME: ${{ steps.payload.outputs.repo_name }}
           JOB_STATUS: ${{ job.status }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
