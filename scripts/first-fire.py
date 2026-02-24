@@ -40,7 +40,11 @@ def run_activate() -> dict:
         from kerygma_pipeline import KerygmaPipeline
 
         templates_dir = SUPERPROJECT_ROOT / "announcement-templates" / "templates"
-        pipeline = KerygmaPipeline(templates_dir=templates_dir)
+        profiles_dir = SUPERPROJECT_ROOT / "kerygma-profiles" / "profiles"
+        pipeline = KerygmaPipeline(
+            templates_dir=templates_dir,
+            profiles_dir=profiles_dir if profiles_dir.is_dir() else None,
+        )
         report = pipeline.activate()
         for key, value in report.items():
             status = "OK" if value else "FAIL" if isinstance(value, bool) else value
@@ -63,7 +67,11 @@ def run_scheduler_check() -> bool:
         from kerygma_pipeline import KerygmaPipeline
 
         templates_dir = SUPERPROJECT_ROOT / "announcement-templates" / "templates"
-        pipeline = KerygmaPipeline(templates_dir=templates_dir)
+        profiles_dir = SUPERPROJECT_ROOT / "kerygma-profiles" / "profiles"
+        pipeline = KerygmaPipeline(
+            templates_dir=templates_dir,
+            profiles_dir=profiles_dir if profiles_dir.is_dir() else None,
+        )
 
         # Verify schedule list works
         upcoming = pipeline._scheduler.get_upcoming(hours=168)
@@ -129,7 +137,11 @@ def run_dry_dispatch() -> dict[str, bool]:
         from kerygma_pipeline import KerygmaPipeline
 
         templates_dir = SUPERPROJECT_ROOT / "announcement-templates" / "templates"
-        pipeline = KerygmaPipeline(templates_dir=templates_dir)
+        profiles_dir = SUPERPROJECT_ROOT / "kerygma-profiles" / "profiles"
+        pipeline = KerygmaPipeline(
+            templates_dir=templates_dir,
+            profiles_dir=profiles_dir if profiles_dir.is_dir() else None,
+        )
 
         for channel in channels:
             try:
@@ -224,7 +236,11 @@ def execute_first_dispatch() -> None:
         from kerygma_pipeline import KerygmaPipeline
 
         templates_dir = SUPERPROJECT_ROOT / "announcement-templates" / "templates"
-        pipeline = KerygmaPipeline(templates_dir=templates_dir)
+        profiles_dir = SUPERPROJECT_ROOT / "kerygma-profiles" / "profiles"
+        pipeline = KerygmaPipeline(
+            templates_dir=templates_dir,
+            profiles_dir=profiles_dir if profiles_dir.is_dir() else None,
+        )
         result = pipeline.run_full_pipeline(
             event_type="essay-published",
             repo_name="public-process",
@@ -247,6 +263,14 @@ def main() -> int:
     parser.add_argument(
         "--live", action="store_true",
         help="Execute the actual first dispatch (requires all checks to pass)",
+    )
+    parser.add_argument(
+        "--profile", default=None,
+        help="Profile ID to use for pre-flight checks (uses profile credentials instead of global config)",
+    )
+    parser.add_argument(
+        "--profiles-dir", type=Path, default=None,
+        help="Path to profiles directory",
     )
     args = parser.parse_args()
 

@@ -251,4 +251,90 @@ python kerygma-pipeline/kerygma_pipeline.py activate
 
 ---
 
-*Generated as part of the CONCORDIA PERPETUA sprint. Last updated: 2026-02-24.*
+---
+
+## 12. Per-Project Social Identity
+
+The IDENTITAS PERPETUA system enables per-project social accounts, voice, and distribution. Each project can have its own Mastodon handle, Discord webhook, tone, and hashtags.
+
+### Profile Onboarding Checklist
+
+1. Create a new YAML file in `kerygma-profiles/profiles/<project-id>.yaml`
+2. Set `profile_id`, `display_name`, `organ`, and `repos` (list of repo names this profile handles)
+3. Configure `voice` — `tone`, `hashtags`, `tagline`
+4. Add platform credentials using `op://` references (e.g., `op://kerygma/<project>-mastodon/access-token`)
+5. Define `channels` with `channel_id`, `platform`, `max_length`, `enabled`
+6. Run `kerygma-profiles validate <project-id>` to verify secrets resolve
+7. Test with `python kerygma-pipeline/kerygma_pipeline.py preview --template essay-announce --repo <repo-name> --channel mastodon`
+
+### 1Password Setup for CI
+
+For GitHub Actions to resolve `op://` secrets:
+1. Create a 1Password Service Account with access to the `kerygma` vault
+2. Set `OP_SERVICE_ACCOUNT_TOKEN` as a GitHub Actions secret
+3. Install `op` CLI in the workflow (use `1password/install-cli-action@v1`)
+4. Secrets are resolved automatically by `kerygma_profiles.secrets.resolve_secret()`
+
+Alternatively, use `KERYGMA_PROFILE_*` env var fallbacks:
+- `op://kerygma/mastodon-system/access-token` → `KERYGMA_PROFILE_MASTODON_SYSTEM_ACCESS_TOKEN`
+
+### Profile YAML Reference
+
+```yaml
+profile_id: my-product          # unique identifier
+display_name: "My Product"      # human-readable name
+organ: III                       # organ number (or null for system-wide)
+repos:                           # repos this profile handles
+  - my-product-api
+  - my-product-docs
+
+voice:
+  tone: friendly                 # friendly, institutional, technical, etc.
+  hashtags: ["#myproduct", "#saas"]
+  tagline: "Build better with My Product"
+
+platforms:
+  mastodon:
+    instance_url: "https://mastodon.social"
+    access_token: "op://kerygma/my-product-mastodon/access-token"
+    visibility: public
+  discord:
+    webhook_url: "op://kerygma/my-product-discord/webhook-url"
+
+channels:
+  - channel_id: mastodon-product
+    platform: mastodon
+    max_length: 500
+    enabled: true
+
+calendar:
+  events: []
+
+rss_feed_url: ""
+```
+
+### CLI Commands
+
+```bash
+# List all profiles
+kerygma-profiles list
+
+# Show a profile (secrets redacted)
+kerygma-profiles show my-product
+
+# Validate all profiles (checks secret resolution)
+kerygma-profiles validate
+
+# Validate one profile
+kerygma-profiles validate my-product
+
+# Pipeline with profiles
+python kerygma-pipeline/kerygma_pipeline.py --profiles-dir kerygma-profiles/profiles status
+python kerygma-pipeline/kerygma_pipeline.py --profiles-dir kerygma-profiles/profiles profiles list
+python kerygma-pipeline/kerygma_pipeline.py --profiles-dir kerygma-profiles/profiles dispatch \
+  --template essay-announce --repo my-product-api --channels mastodon --profile my-product
+```
+
+---
+
+*Generated as part of the IDENTITAS PERPETUA sprint. Last updated: 2026-02-24.*

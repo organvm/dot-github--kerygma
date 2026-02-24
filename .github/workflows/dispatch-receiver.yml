@@ -76,6 +76,7 @@ jobs:
           pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/social-automation.git"
           pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/distribution-strategy.git"
           pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/kerygma-pipeline.git"
+          pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/kerygma-profiles.git"
           pip install pyyaml feedparser
 
       - name: Extract event payload
