@@ -2,10 +2,11 @@
 """First-fire pre-flight check — comprehensive operational readiness dashboard.
 
 Runs all validation steps needed before the first live dispatch:
-  1. Pipeline activate (template + event map checks)
-  2. Live config connectivity (validate-live-config.py)
-  3. Dry-run dispatch for each configured platform
-  4. Go/no-go dashboard
+  1. Pipeline activate (template + event map + calendar + channels checks)
+  2. Scheduler verification (schedule list works)
+  3. Live config connectivity (validate-live-config.py)
+  4. Dry-run dispatch for each configured platform
+  5. Go/no-go dashboard
 
 Usage:
     python first-fire.py           # dry-run pre-flight only
@@ -35,7 +36,6 @@ def run_activate() -> dict:
     logger.info("=" * 60)
 
     try:
-        # Import from the kerygma-pipeline package
         sys.path.insert(0, str(SUPERPROJECT_ROOT / "kerygma-pipeline"))
         from kerygma_pipeline import KerygmaPipeline
 
@@ -51,11 +51,42 @@ def run_activate() -> dict:
         return {"ready": False, "error": str(exc)}
 
 
+def run_scheduler_check() -> bool:
+    """Verify the scheduler is initialized and responsive."""
+    logger.info("")
+    logger.info("=" * 60)
+    logger.info("STEP 2: Scheduler Verification")
+    logger.info("=" * 60)
+
+    try:
+        sys.path.insert(0, str(SUPERPROJECT_ROOT / "kerygma-pipeline"))
+        from kerygma_pipeline import KerygmaPipeline
+
+        templates_dir = SUPERPROJECT_ROOT / "announcement-templates" / "templates"
+        pipeline = KerygmaPipeline(templates_dir=templates_dir)
+
+        # Verify schedule list works
+        upcoming = pipeline._scheduler.get_upcoming(hours=168)
+        logger.info("  Upcoming entries (7d):  %d", len(upcoming))
+
+        due = pipeline._scheduler.get_due()
+        logger.info("  Due now:               %d", len(due))
+
+        total = pipeline._scheduler.total_entries
+        logger.info("  Total entries:         %d", total)
+
+        logger.info("  Scheduler:             OK")
+        return True
+    except Exception as exc:
+        logger.error("  Scheduler check failed: %s", exc)
+        return False
+
+
 def run_connectivity_check() -> bool:
     """Run validate-live-config.py connectivity check."""
     logger.info("")
     logger.info("=" * 60)
-    logger.info("STEP 2: Live Config Connectivity")
+    logger.info("STEP 3: Live Config Connectivity")
     logger.info("=" * 60)
 
     validate_script = SCRIPT_DIR / "validate-live-config.py"
@@ -87,7 +118,7 @@ def run_dry_dispatch() -> dict[str, bool]:
     """Run a dry-run dispatch for each channel to verify the full path."""
     logger.info("")
     logger.info("=" * 60)
-    logger.info("STEP 3: Dry-Run Dispatch (all channels)")
+    logger.info("STEP 4: Dry-Run Dispatch (all channels)")
     logger.info("=" * 60)
 
     results: dict[str, bool] = {}
@@ -124,6 +155,7 @@ def run_dry_dispatch() -> dict[str, bool]:
 
 def display_dashboard(
     activate_report: dict,
+    scheduler_ok: bool,
     connectivity_ok: bool,
     dispatch_results: dict[str, bool],
 ) -> bool:
@@ -137,7 +169,10 @@ def display_dashboard(
         "Templates loaded": activate_report.get("templates_ok", False),
         "Event map complete": activate_report.get("event_map_ok", False),
         "Sample render OK": activate_report.get("sample_render_ok", False),
+        "Calendar loaded": activate_report.get("calendar_ok", False),
+        "Channels configured": activate_report.get("channels_ok", False),
         "Platform(s) configured": activate_report.get("social_config_ok", False),
+        "Scheduler OK": scheduler_ok,
         "Connectivity check": connectivity_ok,
     }
 
@@ -150,14 +185,24 @@ def display_dashboard(
         checks["Sample render OK"],
     ])
 
+    strategy_pass = all([
+        checks.get("Calendar loaded", False),
+        checks.get("Channels configured", False),
+        checks.get("Scheduler OK", False),
+    ])
+
     for name, passed in checks.items():
         icon = "PASS" if passed else "FAIL"
         logger.info("  [%s] %s", icon, name)
 
     logger.info("")
-    if all_critical_pass and checks.get("Platform(s) configured"):
+    if all_critical_pass and strategy_pass and checks.get("Platform(s) configured"):
         logger.info("  VERDICT: GO — system is ready for live dispatch")
         return True
+    elif all_critical_pass and not strategy_pass:
+        logger.info("  VERDICT: PARTIAL — pipeline OK, but strategy layer not fully configured")
+        logger.info("  Check calendar config and channel registry in kerygma_config.yaml")
+        return False
     elif all_critical_pass:
         logger.info("  VERDICT: PARTIAL — pipeline OK, but no platforms configured")
         logger.info("  Configure platform credentials (KERYGMA_* env vars) and re-run")
@@ -212,16 +257,19 @@ def main() -> int:
     # Step 1: Activate
     activate_report = run_activate()
 
-    # Step 2: Connectivity
+    # Step 2: Scheduler
+    scheduler_ok = run_scheduler_check()
+
+    # Step 3: Connectivity
     connectivity_ok = run_connectivity_check()
 
-    # Step 3: Dry-run dispatches
+    # Step 4: Dry-run dispatches
     dispatch_results = run_dry_dispatch()
 
-    # Step 4: Dashboard
-    go = display_dashboard(activate_report, connectivity_ok, dispatch_results)
+    # Step 5: Dashboard
+    go = display_dashboard(activate_report, scheduler_ok, connectivity_ok, dispatch_results)
 
-    # Step 5: Live execution (if requested and checks pass)
+    # Step 6: Live execution (if requested and checks pass)
     if args.live:
         if go:
             execute_first_dispatch()

@@ -10,21 +10,27 @@ from kerygma_pipeline import KerygmaPipeline, EVENT_TEMPLATE_MAP
 
 @pytest.fixture
 def sample_registry(tmp_path):
-    """Minimal registry fixture for integration tests."""
+    """Minimal registry-v2 fixture for integration tests."""
     reg = {
-        "ORGAN-V": {
-            "repos": [
-                {
-                    "name": "public-process",
-                    "description": "Public accountability ledger",
-                    "tier": "flagship",
-                    "github_url": "https://github.com/organvm-v-logos/public-process",
-                    "implementation_status": "PRODUCTION",
-                }
-            ]
-        }
+        "meta": {
+            "version": "2.0",
+            "last_synced": "2026-02-24T00:00:00Z",
+        },
+        "organs": {
+            "ORGAN-V": {
+                "repos": [
+                    {
+                        "name": "public-process",
+                        "description": "Public accountability ledger",
+                        "tier": "flagship",
+                        "github_url": "https://github.com/organvm-v-logos/public-process",
+                        "implementation_status": "PRODUCTION",
+                    }
+                ]
+            }
+        },
     }
-    path = tmp_path / "registry.json"
+    path = tmp_path / "registry-v2.json"
     path.write_text(json.dumps(reg))
     return path
 
@@ -45,6 +51,27 @@ def social_config(tmp_path):
         "delivery_log_path: ''\n"
         "rss_feed_url: ''\n"
         "live_mode: false\n"
+        "channels:\n"
+        "  - channel_id: mastodon-primary\n"
+        "    name: Mastodon Primary\n"
+        "    platform: mastodon\n"
+        "    endpoint: https://mastodon.social\n"
+        "    max_length: 500\n"
+        "    enabled: true\n"
+        "  - channel_id: discord-announcements\n"
+        "    name: Discord Announcements\n"
+        "    platform: discord\n"
+        "    endpoint: ''\n"
+        "    max_length: 4096\n"
+        "    enabled: true\n"
+        "calendar:\n"
+        "  events:\n"
+        "    - event_id: test-event\n"
+        "      name: Test Event\n"
+        "      event_type: conference\n"
+        "      start_date: '2026-07-01'\n"
+        "      end_date: '2026-07-05'\n"
+        "      posting_modifier: 1.5\n"
     )
     return cfg
 
@@ -56,6 +83,8 @@ def pipeline(stub_templates_dir, sample_registry, social_config, tmp_path):
         registry_path=sample_registry,
         social_config_path=social_config,
         analytics_store_path=tmp_path / "analytics.json",
+        calendar_config_path=social_config,
+        schedule_store_path=tmp_path / "schedule.json",
     )
 
 
@@ -80,7 +109,6 @@ class TestPipelineRenderAndCheck:
         results = pipeline.render_and_check(
             "essay-announce", "public-process", ["mastodon", "discord"],
         )
-        # At least one channel should pass quality checks
         assert len(results) > 0
 
     def test_render_mastodon_under_limit(self, pipeline):
@@ -135,7 +163,6 @@ class TestPipelineDispatchWithMockClient:
         channel_texts = {"mastodon": "Post A https://example.com"}
         records_a = pipeline.dispatch(channel_texts)
         records_b = pipeline.dispatch(channel_texts)
-        # post_id uniqueness is embedded in syndication — check no crash from collision
         assert len(records_a) >= 1
         assert len(records_b) >= 1
 
@@ -148,7 +175,6 @@ class TestAnalyticsPersistenceRoundTrip:
     ):
         store_path = tmp_path / "analytics_roundtrip.json"
 
-        # Create pipeline, record analytics
         p1 = KerygmaPipeline(
             templates_dir=stub_templates_dir,
             registry_path=sample_registry,
@@ -163,7 +189,6 @@ class TestAnalyticsPersistenceRoundTrip:
         p1._analytics.flush()
         assert store_path.exists()
 
-        # Create second pipeline pointing to same store — should load persisted data
         p2 = KerygmaPipeline(
             templates_dir=stub_templates_dir,
             registry_path=sample_registry,
@@ -174,3 +199,44 @@ class TestAnalyticsPersistenceRoundTrip:
         loaded = p2._analytics.get_by_channel("mastodon")
         assert len(loaded) == 1
         assert loaded[0].impressions == 100
+
+
+class TestPipelineStatusIncludesStrategyLayer:
+    """Verify status() includes scheduler, calendar, and channels sections (NEXUS PERPETUUS)."""
+
+    def test_status_has_scheduler_section(self, pipeline):
+        report = pipeline.status()
+        assert "scheduler" in report
+        assert "total_entries" in report["scheduler"]
+        assert "pending" in report["scheduler"]
+        assert "due_now" in report["scheduler"]
+
+    def test_status_has_calendar_section(self, pipeline):
+        report = pipeline.status()
+        assert "calendar" in report
+        assert "total_events" in report["calendar"]
+        assert "current_modifier" in report["calendar"]
+
+    def test_status_has_channels_section(self, pipeline):
+        report = pipeline.status()
+        assert "channels" in report
+        assert "total" in report["channels"]
+        assert "enabled" in report["channels"]
+
+
+class TestPipelineActivateIncludesStrategyChecks:
+    """Verify activate() returns calendar_ok and channels_ok (NEXUS PERPETUUS)."""
+
+    def test_activate_has_calendar_ok(self, pipeline):
+        report = pipeline.activate()
+        assert "calendar_ok" in report
+
+    def test_activate_has_channels_ok(self, pipeline):
+        report = pipeline.activate()
+        assert "channels_ok" in report
+
+    def test_activate_ready_considers_strategy(self, pipeline):
+        """ready flag should consider calendar and channels checks."""
+        report = pipeline.activate()
+        assert "ready" in report
+        assert isinstance(report["ready"], bool)

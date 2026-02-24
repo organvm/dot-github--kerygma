@@ -27,6 +27,10 @@ _TEMPLATE_STUBS: list[tuple[str, str, list[str]]] = [
     ("grant-supplement", "institutional", ["mastodon", "discord", "ghost"]),
     ("organ-launch", "launch", ["mastodon", "discord", "bluesky", "ghost"]),
     ("breaking-change", "release", ["mastodon", "discord", "ghost"]),
+    ("community-milestone", "community", ["mastodon", "discord", "ghost"]),
+    ("reading-group", "community", ["mastodon", "discord"]),
+    ("essay-highlight", "essay", ["mastodon", "discord", "ghost"]),
+    ("essay-series", "essay", ["mastodon", "discord", "bluesky", "ghost"]),
 ]
 
 

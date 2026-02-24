@@ -6,6 +6,10 @@ on:
     paths:
       - "kerygma_pipeline.py"
       - "tests/**"
+      - "../kerygma-pipeline/**"
+      - "../announcement-templates/**"
+      - "../social-automation/**"
+      - "../distribution-strategy/**"
   pull_request:
     branches: [main]
 
@@ -28,6 +32,7 @@ jobs:
           pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/announcement-templates.git"
           pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/social-automation.git"
           pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/distribution-strategy.git"
+          pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/kerygma-pipeline.git"
           pip install pyyaml feedparser pytest
 
       - name: Run pipeline tests
@@ -37,3 +42,6 @@ jobs:
         run: |
           python kerygma_pipeline.py status
           python kerygma_pipeline.py templates
+          python kerygma_pipeline.py activate
+          python kerygma_pipeline.py schedule list
+          python kerygma_pipeline.py report --period weekly

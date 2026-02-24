@@ -115,7 +115,67 @@ python .github/scripts/first-fire.py --live
 
 ---
 
-## 8. Verification Checklist
+## 8. Scheduling
+
+The pipeline includes a calendar-aware content scheduler (added in NEXUS PERPETUUS).
+
+### List scheduled entries
+```bash
+python kerygma-pipeline/kerygma_pipeline.py schedule list
+```
+
+### Add a scheduled entry
+```bash
+python kerygma-pipeline/kerygma_pipeline.py schedule add \
+  --content-id essay-announce \
+  --channels mastodon,discord \
+  --at 2026-03-01T10:00:00 \
+  --frequency once
+```
+
+### Show entries due now (with priority scores)
+```bash
+python kerygma-pipeline/kerygma_pipeline.py schedule due
+```
+
+### Process all due entries
+```bash
+python kerygma-pipeline/kerygma_pipeline.py schedule process
+```
+
+This renders, quality-checks, dispatches, and records analytics for each due entry, respecting calendar modifiers.
+
+---
+
+## 9. Backfill
+
+Scan a Jekyll `_posts/` directory and schedule undistributed posts for distribution.
+
+### Dry-run (preview what would be scheduled)
+```bash
+python kerygma-pipeline/kerygma_pipeline.py backfill \
+  --posts-dir ~/Workspace/organvm-v-logos/public-process/_posts \
+  --channels mastodon,discord \
+  --stagger 30
+```
+
+### Execute (create actual schedule entries)
+```bash
+python kerygma-pipeline/kerygma_pipeline.py backfill \
+  --posts-dir ~/Workspace/organvm-v-logos/public-process/_posts \
+  --channels mastodon,discord \
+  --stagger 30 \
+  --execute
+```
+
+Options:
+- `--stagger N` — minutes between staggered posts (default: 30)
+- `--channels` — comma-separated target channels
+- `--execute` — actually create entries (without this flag, it's a dry-run)
+
+---
+
+## 10. Verification Checklist
 
 After the first dispatch, verify:
 
@@ -126,17 +186,20 @@ After the first dispatch, verify:
 - [ ] GitHub: Distribution report issue created in `.github` repo
 - [ ] Status badge: Updated from "0 dispatches" to "1 dispatch"
 - [ ] Delivery log: Entry recorded in `docs/dispatch-log.md`
+- [ ] Scheduler: `schedule list` shows no stale entries
+- [ ] Calendar: Events loaded (check via `status` command)
 
 ---
 
-## 9. Ongoing Operations
+## 11. Ongoing Operations
 
 ### Automated Workflows (cron)
 
 | Workflow | Schedule | Action |
 |----------|----------|--------|
-| `rss-auto-dispatch.yml` | Every 6 hours | Polls ORGAN-V Atom feed for new essays |
-| `weekly-analytics.yml` | Monday 09:00 UTC | Creates weekly report GitHub issue |
+| `rss-auto-dispatch.yml` | Every 6 hours | Polls ORGAN-V Atom feed, processes via scheduler |
+| `weekly-analytics.yml` | Monday 09:00 UTC | Creates weekly report GitHub issue (ReportGenerator format) |
+| `quarterly-feedback.yml` | 1st Monday of Q1/Q2/Q3/Q4 | Collects quarterly signals for Edge 6 synthesis |
 
 ### Manual Operations
 
@@ -171,7 +234,7 @@ python kerygma-pipeline/kerygma_pipeline.py activate
 
 - **Status badge**: Shields.io endpoint at `docs/status-badge.json`, auto-updated after each dispatch
 - **Dispatch log**: `docs/dispatch-log.md` records all dispatch attempts
-- **Weekly reports**: Auto-created as GitHub issues every Monday
+- **Weekly reports**: Auto-created as GitHub issues every Monday (ReportGenerator format with schedule + calendar sections)
 - **Delivery log**: JSON file tracking all syndication records for deduplication
 
 ### Troubleshooting
@@ -183,7 +246,9 @@ python kerygma-pipeline/kerygma_pipeline.py activate
 | Platform timeout | `python .github/scripts/validate-live-config.py` — check connectivity |
 | Quality check failure | Preview the template and check character limits |
 | Circuit breaker open | Wait for reset timeout (default 60s), or check platform status |
+| Scheduler entries stuck | `schedule list` then `schedule process` — check for errors |
+| Calendar not loading | Verify `calendar:` section in `kerygma_config.yaml` |
 
 ---
 
-*Generated as part of the VIVIFICATIO sprint. Last updated: 2026-02-24.*
+*Generated as part of the CONCORDIA PERPETUA sprint. Last updated: 2026-02-24.*

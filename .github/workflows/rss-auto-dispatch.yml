@@ -22,9 +22,10 @@ jobs:
           pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/announcement-templates.git"
           pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/social-automation.git"
           pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/distribution-strategy.git"
+          pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/kerygma-pipeline.git"
           pip install pyyaml feedparser
 
-      - name: Poll and dispatch
+      - name: Poll RSS and schedule dispatch
         env:
           KERYGMA_MASTODON_ACCESS_TOKEN: ${{ secrets.KERYGMA_MASTODON_ACCESS_TOKEN }}
           KERYGMA_DISCORD_WEBHOOK_URL: ${{ secrets.KERYGMA_DISCORD_WEBHOOK_URL }}
@@ -41,9 +42,6 @@ jobs:
           echo "Found $NEW_COUNT new entries."
 
           if [ "$NEW_COUNT" -gt 0 ]; then
-            python kerygma_pipeline.py dispatch \
-              --template essay-announce \
-              --repo public-process \
-              --channels mastodon,discord,bluesky,ghost \
-              2>&1 | tee dispatch_output.txt
+            echo "Processing new entries through scheduler..."
+            python kerygma_pipeline.py schedule process 2>&1 | tee dispatch_output.txt
           fi
