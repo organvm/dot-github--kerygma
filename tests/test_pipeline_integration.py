@@ -2,14 +2,10 @@
 
 import json
 from datetime import datetime
-from pathlib import Path
 
 import pytest
 
 from kerygma_pipeline import KerygmaPipeline, EVENT_TEMPLATE_MAP
-
-
-TEMPLATES_DIR = Path(__file__).parent.parent / "announcement-templates" / "templates"
 
 
 @pytest.fixture
@@ -54,9 +50,9 @@ def social_config(tmp_path):
 
 
 @pytest.fixture
-def pipeline(sample_registry, social_config, tmp_path):
+def pipeline(stub_templates_dir, sample_registry, social_config, tmp_path):
     return KerygmaPipeline(
-        templates_dir=TEMPLATES_DIR,
+        templates_dir=stub_templates_dir,
         registry_path=sample_registry,
         social_config_path=social_config,
         analytics_store_path=tmp_path / "analytics.json",
@@ -147,12 +143,14 @@ class TestPipelineDispatchWithMockClient:
 class TestAnalyticsPersistenceRoundTrip:
     """Test that analytics survive a save/reload cycle."""
 
-    def test_analytics_persist_and_reload(self, sample_registry, social_config, tmp_path):
+    def test_analytics_persist_and_reload(
+        self, stub_templates_dir, sample_registry, social_config, tmp_path,
+    ):
         store_path = tmp_path / "analytics_roundtrip.json"
 
         # Create pipeline, record analytics
         p1 = KerygmaPipeline(
-            templates_dir=TEMPLATES_DIR,
+            templates_dir=stub_templates_dir,
             registry_path=sample_registry,
             social_config_path=social_config,
             analytics_store_path=store_path,
@@ -167,7 +165,7 @@ class TestAnalyticsPersistenceRoundTrip:
 
         # Create second pipeline pointing to same store — should load persisted data
         p2 = KerygmaPipeline(
-            templates_dir=TEMPLATES_DIR,
+            templates_dir=stub_templates_dir,
             registry_path=sample_registry,
             social_config_path=social_config,
             analytics_store_path=store_path,
