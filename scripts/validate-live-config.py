@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import logging
 import os
 import sys
 import time
@@ -17,16 +18,18 @@ import urllib.error
 import urllib.request
 from base64 import urlsafe_b64encode
 
+logger = logging.getLogger("kerygma.validate")
+
 
 def check_endpoint(name: str, url: str, headers: dict[str, str]) -> bool:
     """Send a GET/HEAD request and return True if we get a 2xx response."""
     req = urllib.request.Request(url, headers=headers, method="GET")
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
-            print(f"  [{name}] OK — HTTP {resp.status}")
+            logger.info("[%s] OK — HTTP %s", name, resp.status)
             return True
     except Exception as exc:
-        print(f"  [{name}] FAIL — {exc}")
+        logger.error("[%s] FAIL — %s", name, exc)
         return False
 
 
@@ -72,11 +75,15 @@ def build_checks() -> list[tuple[str, str, dict[str, str]]]:
 
 
 def main() -> int:
-    print("Kerygma Live Config Validation")
-    print("=" * 40)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(name)s %(levelname)s %(message)s",
+    )
+    logger.info("Kerygma Live Config Validation")
+    logger.info("=" * 40)
     checks = build_checks()
     if not checks:
-        print("No platforms configured (set KERYGMA_* env vars).")
+        logger.warning("No platforms configured (set KERYGMA_* env vars).")
         return 1
 
     results = []
@@ -85,7 +92,7 @@ def main() -> int:
 
     passed = sum(results)
     total = len(results)
-    print(f"\n{passed}/{total} endpoints reachable.")
+    logger.info("%d/%d endpoints reachable.", passed, total)
     return 0 if all(results) else 1
 
 

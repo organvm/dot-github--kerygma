@@ -1,8 +1,18 @@
 // ORGANVM Ghost Theme — main.js
-// Minimal JS: syntax highlighting via Prism.js (loaded from CDN if code blocks exist)
+// Navigation toggle and syntax highlighting via Prism.js
 
 (function () {
     'use strict';
+
+    // Mobile navigation toggle
+    var toggle = document.getElementById('nav-toggle');
+    if (toggle) {
+        var navList = document.querySelector('.site-nav .nav-list');
+        toggle.addEventListener('click', function () {
+            toggle.classList.toggle('active');
+            if (navList) navList.classList.toggle('nav-open');
+        });
+    }
 
     // Load Prism.js for syntax highlighting if code blocks are present
     var codeBlocks = document.querySelectorAll('pre code');

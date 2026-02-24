@@ -53,6 +53,14 @@
     </div>
 </section>
 
+{{#unless @member}}
+<section class="subscribe-cta">
+    <h3>Follow the Process</h3>
+    <p>Essays, releases, and milestones from the eight-organ system. No spam, unsubscribe anytime.</p>
+    <a class="subscribe-btn" href="#/portal/signup">Subscribe</a>
+</section>
+{{/unless}}
+
 <section class="post-feed">
     {{#foreach posts}}
     <article class="post-card {{post_class}}">

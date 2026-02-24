@@ -1,5 +1,7 @@
 {{!< default}}
 
+<div class="reading-progress" id="reading-progress"></div>
+
 <article class="post-full {{post_class}}">
     <header class="post-full-header">
         {{#if primary_tag}}
@@ -49,8 +51,37 @@
     </footer>
 </article>
 
+{{#get "posts" filter="id:-{{id}}" limit="3"}}
+{{#if posts.length}}
+<section class="related-posts">
+    <h3>Related Posts</h3>
+    <div class="related-posts-grid">
+        {{#foreach posts}}
+        <a href="{{url}}" class="related-post-card">
+            <div class="related-title">{{title}}</div>
+            <div class="related-date">{{date format="D MMM YYYY"}}</div>
+        </a>
+        {{/foreach}}
+    </div>
+</section>
+{{/if}}
+{{/get}}
+
 {{#if comments}}
 <section class="post-comments">
     {{comments}}
 </section>
 {{/if}}
+
+<script>
+(function() {
+    var progress = document.getElementById('reading-progress');
+    if (!progress) return;
+    window.addEventListener('scroll', function() {
+        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        if (docHeight > 0) {
+            progress.style.width = (window.scrollY / docHeight * 100) + '%';
+        }
+    }, {passive: true});
+})();
+</script>

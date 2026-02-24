@@ -12,8 +12,8 @@ org: organvm-vii-kerygma
 metadata:
   implementation_status: PRODUCTION
   tier: infrastructure
-  promotion_status: DEPLOYED
-  last_validated: "2026-02-17"
+  promotion_status: GRADUATED
+  last_validated: "2026-02-18"
   generated: "2026-02-17"
   sprint: "PROCLAMATIO"
 
@@ -21,7 +21,7 @@ packages:
   - name: kerygma_templates
     repo: announcement-templates
     version: "1.0.0"
-    description: "Template engine, quality checker, registry loader, 15 multi-channel templates"
+    description: "Template engine, quality checker, registry loader, 16 multi-channel templates"
   - name: kerygma_social
     repo: social-automation
     version: "1.0.0"
@@ -92,6 +92,12 @@ subscriptions:
   - event: partnership-announced
     source: ORGAN-VI
     action: Render and distribute partnership announcement
+  - event: reading-group-scheduled
+    source: ORGAN-VI
+    action: Render and distribute reading group invitation
+  - event: community-milestone
+    source: ORGAN-VI
+    action: Render and distribute community milestone
 
 # Events this organ emits (outbound)
 produces:

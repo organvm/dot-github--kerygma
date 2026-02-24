@@ -25,6 +25,11 @@ jobs:
           pip install pyyaml feedparser
 
       - name: Generate report
+        env:
+          KERYGMA_MASTODON_INSTANCE_URL: ${{ secrets.KERYGMA_MASTODON_INSTANCE_URL }}
+          KERYGMA_MASTODON_ACCESS_TOKEN: ${{ secrets.KERYGMA_MASTODON_ACCESS_TOKEN }}
+          KERYGMA_GHOST_API_URL: ${{ secrets.KERYGMA_GHOST_API_URL }}
+          KERYGMA_GHOST_ADMIN_API_KEY: ${{ secrets.KERYGMA_GHOST_ADMIN_API_KEY }}
         run: |
           python kerygma_pipeline.py report --period weekly > report.md
 
