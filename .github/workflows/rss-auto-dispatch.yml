@@ -8,6 +8,7 @@ on:
 jobs:
   poll-and-dispatch:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -17,8 +18,15 @@ jobs:
 
       - name: Install packages
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ORCHESTRATION_PAT: ${{ secrets.ORCHESTRATION_PAT }}
+          GH_TOKEN_FALLBACK: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          GH_TOKEN="${ORCHESTRATION_PAT:-$GH_TOKEN_FALLBACK}"
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::No token available for private dependency install; skipping dispatch run."
+            exit 0
+          fi
+
           pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/announcement-templates.git"
           pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/social-automation.git"
           pip install "git+https://${GH_TOKEN}@github.com/organvm-vii-kerygma/distribution-strategy.git"
