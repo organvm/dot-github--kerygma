@@ -4,19 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-The `.github` org-level repository for ORGAN-VII (Kerygma). Contains CI/CD workflows, the pipeline orchestrator script, operational deployment scripts, a Ghost newsletter theme, cross-organ workflow specs, community health files, and the authoritative `seed.yaml` for the entire organ.
+The `.github` org-level repository for ORGAN-VII (Kerygma). Contains the public org profile, community health files, activation records, CI/CD workflow history, the dormant pipeline shim, operational deployment scripts, a Ghost newsletter theme, cross-organ workflow specs, and the authoritative `seed.yaml` for the entire organ.
 
 ## Repository Structure
 
 | Path | Purpose |
 |------|---------|
-| `.github/workflows/` | 8 GitHub Actions workflows (CI, dispatch, RSS polling, analytics, quarterly) |
+| `.github/workflows/` | 9 GitHub Actions workflows (CI, dispatch, RSS polling, analytics, quarterly, Dependabot) |
 | `scripts/` | Operational Python scripts for deployment and validation |
 | `docs/` | ADRs, cross-organ workflow YAML specs, platform stack docs |
 | `docs/cross-organ-workflows/` | Reusable workflow specs (`notify-essay-published.yml`, `notify-feature-released.yml`) |
 | `organvm-theme/` | Ghost newsletter Handlebars theme (`default.hbs`, `index.hbs`, `post.hbs`, `partials/`, `assets/`) |
 | `tests/` | Integration tests for pipeline and config validation |
-| `kerygma_pipeline.py` | Pipeline orchestrator (same file as in `kerygma-pipeline/` submodule) |
+| `kerygma_pipeline.py` | Dormant compatibility shim that delegates to the installable `kerygma_pipeline` package |
 | `kerygma_config.example.yaml` | Reference configuration for all platforms, channels, calendar |
 | `seed.yaml` | Authoritative organ contract — declares all packages, event subscriptions (13 inbound from 6 organs), produced events, platform stack, channels, fediverse config |
 | `organ-aesthetic.yaml` | Visual identity modifiers (palette, typography, tone) |
@@ -57,6 +57,7 @@ python .github/scripts/validate-live-config.py
 ## Key Details
 
 - **seed.yaml is the authoritative organ contract** — declares all 4 packages, 13 inbound event subscriptions from 6 organs, 4 produced events, the full platform stack (Ghost hub + Mastodon/Bluesky/Discord social + manual channels), and fediverse/ActivityPub integration via Ghost.
+- **Activation status** — Issue #7 classifies this repo as `actually-live` because the public org profile and root landing page ship; the root POSSE pipeline shim and nine workflows are retained but dormant until a fresh live-platform audit.
 - **Ghost theme** in `organvm-theme/` uses Handlebars (`.hbs`). Deployed via `scripts/deploy-ghost-theme.py` using Ghost Admin API JWT auth.
 - **Cross-organ workflows** in `docs/cross-organ-workflows/` are YAML specs that other organs' `dispatch-receiver` workflows consume.
 - Community health files: `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/ISSUE_TEMPLATE/`.
