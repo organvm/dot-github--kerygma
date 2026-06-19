@@ -51,3 +51,7 @@ Content follows the POSSE methodology (Publish Own Site, Syndicate Elsewhere). A
 ---
 
 *Part of the [organvm eight-organ system](https://github.com/meta-organvm)*
+
+## Documentation Standards
+
+- README structure and depth should follow [README standards](README_STANDARDS.md)

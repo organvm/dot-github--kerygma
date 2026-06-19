@@ -21,3 +21,7 @@ dependency, and dispatch audit.
 
 See [docs/activation-audit-2026-06-19.md](docs/activation-audit-2026-06-19.md)
 for the Issue #7 closeout record.
+
+## README Standards
+
+Local README standards overlay: [README_STANDARDS.md](README_STANDARDS.md)
