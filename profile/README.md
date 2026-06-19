@@ -6,7 +6,7 @@ _Content distribution and audience engagement_
 
 > The proclamation layer for the organvm system — POSSE distribution, content syndication, announcements, and public communication that carries the system's work to audiences beyond GitHub.
 
-**4 repositories · 3 SKELETON · 1 DESIGN_ONLY**
+**7 repositories · public profile and landing live · root pipeline retained/dormant**
 
 [Philosophy](#philosophy) | [What This Organ Does](#what-this-organ-does) | [Distribution Strategy](#distribution-strategy) | [Repositories](#repositories) | [Place in the Eight-Organ System](#place-in-the-eight-organ-system)
 
@@ -38,15 +38,19 @@ ORGAN-VII implements a **POSSE strategy** — Publish on Own Site, Syndicate Els
 3. **Public Process** — ORGAN-V produces essays and methodology reflections that contextualize the work
 4. **Proclamation** — ORGAN-VII syndicates finished material to external platforms, always linking back to the canonical source
 
-Each piece of content has a **single source of truth** (the organvm repository) and multiple syndicated copies with backlinks. POSSE syndication to Mastodon and Discord is verified and operational.
+Each piece of content has a **single source of truth** (the organvm repository) and multiple syndicated copies with backlinks. The historical POSSE automation stack is retained in this organization, while the currently shipped surface is the public profile and root landing page.
 
 ## Repositories
 
 | Repository | Description | Status |
 |:-----------|:------------|:------:|
-| [social-automation](https://github.com/organvm-vii-kerygma/social-automation) | POSSE syndication infrastructure and content pipeline | SKELETON |
-| [distribution-strategy](https://github.com/organvm-vii-kerygma/distribution-strategy) | Distribution strategy documentation and channel architecture | SKELETON |
-| [announcement-templates](https://github.com/organvm-vii-kerygma/announcement-templates) | Release notes, milestones, and public update templates | SKELETON |
+| [.github](https://github.com/organvm-vii-kerygma/.github) | Organization profile, community health files, activation records, and retained workflow history | LIVE |
+| [organvm-vii-kerygma.github.io](https://github.com/organvm-vii-kerygma/organvm-vii-kerygma.github.io) | Root GitHub Pages landing page | LIVE |
+| [kerygma-pipeline](https://github.com/organvm-vii-kerygma/kerygma-pipeline) | Installable POSSE orchestrator package | DORMANT |
+| [social-automation](https://github.com/organvm-vii-kerygma/social-automation) | POSSE platform adapters and social automation backend | DORMANT |
+| [distribution-strategy](https://github.com/organvm-vii-kerygma/distribution-strategy) | Distribution strategy documentation and channel architecture | DORMANT |
+| [announcement-templates](https://github.com/organvm-vii-kerygma/announcement-templates) | Release notes, milestones, and public update templates | ARCHIVED |
+| [kerygma-profiles](https://github.com/organvm-vii-kerygma/kerygma-profiles) | Per-project social identity profiles for distribution | DORMANT |
 
 ## Place in the Eight-Organ System
 
