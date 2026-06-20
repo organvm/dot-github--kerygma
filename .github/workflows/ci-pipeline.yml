@@ -4,12 +4,10 @@ on:
   push:
     branches: [main]
     paths:
+      - ".github/workflows/**"
       - "kerygma_pipeline.py"
+      - "scripts/**"
       - "tests/**"
-      - "../kerygma-pipeline/**"
-      - "../announcement-templates/**"
-      - "../social-automation/**"
-      - "../distribution-strategy/**"
   pull_request:
     branches: [main]
 

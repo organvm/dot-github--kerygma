@@ -44,7 +44,7 @@ jobs:
           TITLE=$(gh issue view "$ISSUE_NUM" --repo "$REPO_FULL" \
             --json title --jq '.title' 2>/dev/null || echo "")
 
-          QUARTER=$(echo "$TITLE" | sed 's/Quarterly Feedback: //')
+          QUARTER=${TITLE#Quarterly Feedback: }
           echo "quarter=${QUARTER}" >> "$GITHUB_OUTPUT"
 
           echo "$BODY" > synthesis_body.txt
